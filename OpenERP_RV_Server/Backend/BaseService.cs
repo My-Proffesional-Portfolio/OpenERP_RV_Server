@@ -1,4 +1,5 @@
-﻿using OpenERP_RV_Server.DataAccess;
+﻿using Microsoft.AspNetCore.Http;
+using OpenERP_RV_Server.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace OpenERP_RV_Server.Backend
     {
         protected OpenERP_RVContext DbContext = new OpenERP_RVContext();
 
+        public static HttpContext HttpContext { get;  set; }
     }
 }

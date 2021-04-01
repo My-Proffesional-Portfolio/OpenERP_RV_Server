@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using OpenERP_RV_Server.Backend;
 using OpenERP_RV_Server.Models.Account.Request;
 using System;
@@ -14,6 +15,12 @@ namespace OpenERP_RV_Server.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
+
+        //https://stackoverflow.com/questions/42731686/using-httpcontext-outside-of-a-controller
+        public AccountController(IHttpContextAccessor accessor)
+        {
+            BaseService.HttpContext = accessor.HttpContext;
+        }
         // GET: api/<AccountController>
         [HttpGet]
         public IEnumerable<string> Get()
@@ -26,6 +33,8 @@ namespace OpenERP_RV_Server.Controllers
        
         public string Get(int id)
         {
+            //var userName = HttpContext.Session.GetString("userName");
+            //var companyID = HttpContext.Session.GetString("companyID");
             return "value";
         }
 

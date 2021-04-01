@@ -1,8 +1,10 @@
-﻿using OpenERP_RV_Server.DataAccess;
+﻿using Microsoft.AspNetCore.Http;
+using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.Models.Account.Request;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenERP_RV_Server.Backend
@@ -62,11 +64,16 @@ namespace OpenERP_RV_Server.Backend
                 response.CorporateOfficeID = corporate.Id.ToString();
                 response.CompanyLegalName = company.LegalName;
                 response.UserName = selectedUser.UserName;
+
+                HttpContext.Session.SetString("companyID", response.CompanyID);
+                HttpContext.Session.SetString("userName", response.UserName);
+
             }
             else
             {
                 response.ErrorMessages.Add("El password no coincide con el usuario");
             }
+
 
             return response;
 
