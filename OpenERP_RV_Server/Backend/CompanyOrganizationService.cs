@@ -1,4 +1,5 @@
-﻿using OpenERP_RV_Server.DataAccess;
+﻿using Microsoft.EntityFrameworkCore;
+using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.Models.CompanyOrganization;
 using System;
 using System.Collections.Generic;
@@ -87,6 +88,23 @@ namespace OpenERP_RV_Server.Backend
         private IQueryable<CorporateOffice> GetCorporates()
         {
             return DbContext.CorporateOffices.AsQueryable();
+        }
+
+        private IQueryable<Company> GetCompanies()
+        {
+            return DbContext.Companies.Include(i=> i.CorporateOffice).AsQueryable();
+        }
+
+        public Company GetCompanyByID(Guid id)
+        {
+            return GetCompanies().FirstOrDefault(f => f.Id == id);
+        }
+
+        public CorporateOffice GetCorporateByCompanyID(Guid companyID)
+        {
+            var company = GetCompanyByID(companyID);
+            var corporate = company.CorporateOffice;
+            return corporate;
         }
     }
 }

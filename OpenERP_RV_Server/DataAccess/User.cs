@@ -14,7 +14,7 @@ namespace OpenERP_RV_Server.DataAccess
         public string Salt { get; set; }
         public string HashedPassword { get; set; }
         public bool Status { get; set; }
-        public Guid ComapnyId { get; set; }
-        public Guid? CorporateOffice { get; set; }
+        public Guid CompanyId { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }

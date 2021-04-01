@@ -75,7 +75,7 @@ namespace OpenERP_RV_Server.Backend
             permClaims.Add(new Claim("valid", "1"));
             permClaims.Add(new Claim("userId", userInfo.UserId.ToString()));
             permClaims.Add(new Claim("name", userInfo.UserName));
-            permClaims.Add(new Claim("companyId", userInfo.ComapnyId.ToString()));
+            permClaims.Add(new Claim("companyId", userInfo.CompanyId.ToString()));
             permClaims.Add(new Claim("email", userInfo.Email));
 
 
