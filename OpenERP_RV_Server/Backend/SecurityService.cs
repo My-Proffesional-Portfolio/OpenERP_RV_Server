@@ -72,7 +72,7 @@ namespace OpenERP_RV_Server.Backend
 
             var permClaims = new List<Claim>();
             permClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
-            permClaims.Add(new Claim("valid", "1"));
+            permClaims.Add(new Claim("isValidPublicAPI_Token", "true"));
             permClaims.Add(new Claim("userId", userInfo.UserId.ToString()));
             permClaims.Add(new Claim("name", userInfo.UserName));
             permClaims.Add(new Claim("companyId", userInfo.CompanyId.ToString()));
