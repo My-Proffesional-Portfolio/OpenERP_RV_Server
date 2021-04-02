@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OpenERP_RV_Server.DataAccess;
+using OpenERP_RV_Server.ExceptionTypes;
 using OpenERP_RV_Server.Models.CompanyOrganization;
 using System;
 using System.Collections.Generic;
@@ -37,8 +38,7 @@ namespace OpenERP_RV_Server.Backend
             }
             catch (Exception ex)
             {
-                result.ErrorMessages.Add(ex.Message);
-                return result;
+                throw new FriendlyTransactionException("No se pudo completar la transacción, asegurate de haber llenado todos los campos obligatorios");
             }
         }
 
@@ -92,7 +92,7 @@ namespace OpenERP_RV_Server.Backend
 
         private IQueryable<Company> GetCompanies()
         {
-            return DbContext.Companies.Include(i=> i.CorporateOffice).AsQueryable();
+            return DbContext.Companies.Include(i => i.CorporateOffice).AsQueryable();
         }
 
         public Company GetCompanyByID(Guid id)
@@ -105,6 +105,30 @@ namespace OpenERP_RV_Server.Backend
             var company = GetCompanyByID(companyID);
             var corporate = company.CorporateOffice;
             return corporate;
+        }
+
+        public CorporateOffice GetCorporateByCorporateID(Guid corporateID)
+        {
+            var corporate = GetCorporates().FirstOrDefault(f => f.Id == corporateID);
+            return corporate;
+        }
+
+        public object GetCorporateInfoById(Guid corporateId)
+        {
+            var coporateOffice = GetCorporateByCorporateID(corporateId);
+
+            return new
+            {
+                coporateOffice.Id,
+                coporateOffice.Name,
+                Companies = coporateOffice.Companies.Select(s => new
+                {
+                    s.LegalName,
+                    s.CommercialName,
+                    s.OfficeNumberId,
+                    s.FiscalIdentifier
+                }),
+            };
         }
     }
 }

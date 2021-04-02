@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using OpenERP_RV_Server.DataAccess;
+using OpenERP_RV_Server.ExceptionTypes;
 using OpenERP_RV_Server.Models.Account.Request;
+using OpenERP_RV_Server.Models.Account.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,7 +48,9 @@ namespace OpenERP_RV_Server.Backend
             var response = new LoginResponseModel();
             if (selectedUser == null)
             {
-                response.ErrorMessages.Add("El usuario solicitado no existe, revisar nombre de usuario");
+                //response.ErrorMessages.Add("El usuario solicitado no existe, revisar nombre de usuario");
+                //return response;
+                throw new FriendlyNotFoundException("No se pudo encontrar el usuario especificado, favor de revisar el nombre de usuario");
             }
             var salt = selectedUser.Salt;
             var hashedPassword = selectedUser.HashedPassword;
@@ -65,8 +71,13 @@ namespace OpenERP_RV_Server.Backend
                 response.CompanyLegalName = company.LegalName;
                 response.UserName = selectedUser.UserName;
 
+                //https://stackoverflow.com/questions/39920954/asp-core-how-to-set-httpcontext-user
+                var user = new GenericPrincipal(new ClaimsIdentity(response.UserName), null);
+                HttpContext.User = user;
+
                 HttpContext.Session.SetString("companyID", response.CompanyID);
                 HttpContext.Session.SetString("userName", response.UserName);
+                HttpContext.Session.SetString("token", token);
 
             }
             else
@@ -82,6 +93,16 @@ namespace OpenERP_RV_Server.Backend
         private User GetUserByName(string userName)
         {
             return GetUsers().Where(w => w.UserName == userName).FirstOrDefault(); ;
+        }
+
+        public LoginSessionData GetCurrentUserSession()
+        {
+            var response = new LoginSessionData();
+            response.CurrentUserName = HttpContext.Session.GetString("userName");
+            response.CurrentToken = HttpContext.Session.GetString("token");
+            response.CompanyLogged = HttpContext.Session.GetString("companyID");
+
+            return response;
         }
 
     }

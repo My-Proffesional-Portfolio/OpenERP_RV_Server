@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OpenERP_RV_Server.Backend;
+using OpenERP_RV_Server.Filters;
 using OpenERP_RV_Server.Models.Account.Request;
+using OpenERP_RV_Server.Models.Account.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,7 @@ namespace OpenERP_RV_Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AutomaticExceptionHandler]
     public class AccountController : ControllerBase
     {
 
@@ -23,19 +26,12 @@ namespace OpenERP_RV_Server.Controllers
         }
         // GET: api/<AccountController>
         [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/<AccountController>/5
-        [HttpGet("{id}")]
-       
-        public string Get(int id)
+        [Route("currentSession")]
+        public IActionResult Get()
         {
             //var userName = HttpContext.Session.GetString("userName");
             //var companyID = HttpContext.Session.GetString("companyID");
-            return "value";
+            return Ok(new UserService().GetCurrentUserSession());
         }
 
         // POST api/<AccountController>
@@ -47,14 +43,9 @@ namespace OpenERP_RV_Server.Controllers
             return Ok(user);
         }
 
-        // PUT api/<AccountController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
         // DELETE api/<AccountController>/5
-        [HttpDelete("{id}")]
+        [HttpDelete()]
+        [Route("logout")]
         public void Delete(int id)
         {
         }

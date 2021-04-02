@@ -41,7 +41,7 @@ namespace OpenERP_RV_Server
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "OpenERP_RV_Server", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "OpenERP RV", Version = "v1" });
             });
         }
 
@@ -51,9 +51,11 @@ namespace OpenERP_RV_Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OpenERP_RV_Server v1"));
+               
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OpenERP_RV_Server v1"));
 
             app.UseHttpsRedirection();
 
