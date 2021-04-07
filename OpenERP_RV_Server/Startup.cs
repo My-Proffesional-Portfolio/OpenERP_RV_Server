@@ -17,6 +17,7 @@ namespace OpenERP_RV_Server
 {
     public class Startup
     {
+        readonly string allCorsEnabled = "_myAllowSpecificOrigins";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -36,7 +37,21 @@ namespace OpenERP_RV_Server
                 options.Cookie.IsEssential = true;
             });
 
+
+
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: allCorsEnabled,
+                                  builder =>
+                                  {
+                                      builder.AllowAnyHeader()
+                                      .AllowAnyOrigin()
+                                      .AllowAnyMethod();
+                                  });
+            });
+
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -60,6 +75,7 @@ namespace OpenERP_RV_Server
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors(allCorsEnabled);
 
             app.UseAuthorization();
 
