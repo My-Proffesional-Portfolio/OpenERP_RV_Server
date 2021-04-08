@@ -27,7 +27,7 @@ namespace OpenERP_RV_Server.DataAccess
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=DESKTOP-ONROABL\\SQLEXPRESS02;Database=OpenERP_RV;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=open-erp.database.windows.net;Database=OpenERP_RV;User Id=open-erp-admin;password=op3n3rp-070421;Trusted_Connection=False;MultipleActiveResultSets=true;");
             }
         }
 
@@ -66,13 +66,13 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.Companies)
                     .HasForeignKey(d => d.BusinessCategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Companies__Busin__2A4B4B5E");
+                    .HasConstraintName("FK__Companies__Busin__6383C8BA");
 
                 entity.HasOne(d => d.CorporateOffice)
                     .WithMany(p => p.Companies)
                     .HasForeignKey(d => d.CorporateOfficeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Companies__Corpo__276EDEB3");
+                    .HasConstraintName("FK__Companies__Corpo__628FA481");
             });
 
             modelBuilder.Entity<CorporateOffice>(entity =>
