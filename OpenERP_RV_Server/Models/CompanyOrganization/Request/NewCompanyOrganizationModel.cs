@@ -18,6 +18,5 @@ namespace OpenERP_RV_Server.Models.CompanyOrganization
         public string OfficeNumberId { get; set; }
         public string ContactName { get; set; }
 
-
     }
 }

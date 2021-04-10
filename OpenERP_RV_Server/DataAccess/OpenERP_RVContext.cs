@@ -18,6 +18,7 @@ namespace OpenERP_RV_Server.DataAccess
         }
 
         public virtual DbSet<BusinessCategory> BusinessCategories { get; set; }
+        public virtual DbSet<Client> Clients { get; set; }
         public virtual DbSet<Company> Companies { get; set; }
         public virtual DbSet<CorporateOffice> CorporateOffices { get; set; }
         public virtual DbSet<User> Users { get; set; }
@@ -26,8 +27,9 @@ namespace OpenERP_RV_Server.DataAccess
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=DESKTOP-ONROABL\\SQLEXPRESS02;Database=OpenERP_RV;Trusted_Connection=True;");
-              //optionsBuilder.UseSqlServer("Server=open-erp.database.windows.net;Database=OpenERP_RV;User Id=open-erp-admin;password=op3n3rp-070421;Trusted_Connection=False;MultipleActiveResultSets=true;");
+                //optionsBuilder.UseSqlServer("Server=DESKTOP-ONROABL\\SQLEXPRESS02;Database=OpenERP_RV;Trusted_Connection=True;connect timeout=1000");
+                optionsBuilder.UseSqlServer("Server=open-erp.database.windows.net;Database=OpenERP_RV;User Id=open-erp-admin;password=op3n3rp-070421;Trusted_Connection=False;MultipleActiveResultSets=true;");
+
             }
         }
 
@@ -40,6 +42,31 @@ namespace OpenERP_RV_Server.DataAccess
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
                 entity.Property(e => e.Description).IsRequired();
+            });
+
+            modelBuilder.Entity<Client>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.CompanyName).IsRequired();
+
+                entity.Property(e => e.ContactName).IsRequired();
+
+                entity.Property(e => e.FiscalIdentifier)
+                    .IsRequired()
+                    .HasMaxLength(150);
+
+                entity.HasOne(d => d.BusinessCategory)
+                    .WithMany(p => p.Clients)
+                    .HasForeignKey(d => d.BusinessCategoryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Clients__Busines__3B75D760");
+
+                entity.HasOne(d => d.CorporateOffice)
+                    .WithMany(p => p.Clients)
+                    .HasForeignKey(d => d.CorporateOfficeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Clients__Corpora__3A81B327");
             });
 
             modelBuilder.Entity<Company>(entity =>
@@ -66,13 +93,13 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.Companies)
                     .HasForeignKey(d => d.BusinessCategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Companies__Busin__6383C8BA");
+                    .HasConstraintName("FK__Companies__Busin__2A4B4B5E");
 
                 entity.HasOne(d => d.CorporateOffice)
                     .WithMany(p => p.Companies)
                     .HasForeignKey(d => d.CorporateOfficeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Companies__Corpo__628FA481");
+                    .HasConstraintName("FK__Companies__Corpo__276EDEB3");
             });
 
             modelBuilder.Entity<CorporateOffice>(entity =>

@@ -21,7 +21,7 @@ namespace OpenERP_RV_Server.Backend
             return DbContext.Users.AsQueryable();
         }
 
-        public User AddNewUser(string userName, string password, string phone, string email, Guid newCompanyID, Guid? newCorporateOfficeID )
+        public User AddNewUser(string userName, string password, string phone, string email, Guid newCompanyID, Guid? newCorporateOfficeID)
         {
             var newUser = new User();
             newUser.UserId = Guid.NewGuid();
@@ -37,8 +37,9 @@ namespace OpenERP_RV_Server.Backend
             newUser.Status = true;
             newUser.Email = email;
             newUser.IsAdmin = newCorporateOfficeID.HasValue;
+            //DbContext.Users.Add(newUser);
             DbContext.Users.Add(newUser);
-            DbContext.SaveChanges();
+           // DbContext.SaveChanges();
             return newUser;
         }
 
@@ -76,6 +77,7 @@ namespace OpenERP_RV_Server.Backend
                 HttpContext.User = user;
 
                 HttpContext.Session.SetString("companyID", response.CompanyID);
+                HttpContext.Session.SetString("corporateOfficeID", response.CorporateOfficeID);
                 HttpContext.Session.SetString("userName", response.UserName);
                 HttpContext.Session.SetString("token", token);
 

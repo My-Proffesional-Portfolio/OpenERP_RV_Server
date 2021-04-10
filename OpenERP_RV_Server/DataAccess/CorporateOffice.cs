@@ -9,6 +9,7 @@ namespace OpenERP_RV_Server.DataAccess
     {
         public CorporateOffice()
         {
+            Clients = new HashSet<Client>();
             Companies = new HashSet<Company>();
         }
 
@@ -19,6 +20,7 @@ namespace OpenERP_RV_Server.DataAccess
         public string ContactName { get; set; }
         public string Phone { get; set; }
 
+        public virtual ICollection<Client> Clients { get; set; }
         public virtual ICollection<Company> Companies { get; set; }
     }
 }

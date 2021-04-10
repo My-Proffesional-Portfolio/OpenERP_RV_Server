@@ -33,7 +33,8 @@ namespace OpenERP_RV_Server.Controllers
             //var addCompanyTransactionResult = new Transactions().RunTransaction(add);
             //return Ok(addCompanyTransactionResult);
 
-            return Ok(new CompanyOrganizationService().AddNewCompanyOrganization(company));
+            var result =  new CompanyOrganizationService().AddNewCompanyOrganization(company);
+            return  Ok(result);
 
         }
 
