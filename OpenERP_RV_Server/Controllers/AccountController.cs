@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OpenERP_RV_Server.Backend;
 using OpenERP_RV_Server.Filters;
@@ -27,6 +28,7 @@ namespace OpenERP_RV_Server.Controllers
         // GET: api/<AccountController>
         [HttpGet]
         [Route("currentSession")]
+        [Authorize]
         public IActionResult Get()
         {
             //var userName = HttpContext.Session.GetString("userName");

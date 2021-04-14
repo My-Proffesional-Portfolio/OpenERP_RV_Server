@@ -49,7 +49,7 @@ namespace OpenERP_RV_Server.Backend
             }
             catch (Exception ex)
             {
-                throw new FriendlyTransactionException("No se pudo completar la transacción, asegurate de haber llenado todos los campos obligatorios");
+                throw new FriendlyTransactionException("No se pudo completar la transacción: " + ex.Message);
             }
         }
 
@@ -152,7 +152,7 @@ namespace OpenERP_RV_Server.Backend
 
         private IQueryable<CorporateOffice> GetCorporates()
         {
-            return DbContext.CorporateOffices.AsQueryable();
+            return DbContext.CorporateOffices.Include(i=> i.Companies).AsQueryable();
         }
 
         private IQueryable<Company> GetCompanies()
@@ -191,7 +191,10 @@ namespace OpenERP_RV_Server.Backend
                     s.LegalName,
                     s.CommercialName,
                     s.OfficeNumberId,
-                    s.FiscalIdentifier
+                    s.FiscalIdentifier,
+                    s.Phone,
+                    s.Address,
+                    s.Id,
                 }),
             };
         }

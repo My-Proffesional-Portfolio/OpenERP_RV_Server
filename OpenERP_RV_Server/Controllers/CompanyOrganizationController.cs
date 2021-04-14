@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OpenERP_RV_Server.Backend;
 using OpenERP_RV_Server.Filters;
 using OpenERP_RV_Server.Models.CompanyOrganization;
@@ -16,6 +17,7 @@ namespace OpenERP_RV_Server.Controllers
     {
 
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult Get(Guid id)
         {
             return Ok(new CompanyOrganizationService().GetCorporateInfoById(id));
@@ -39,6 +41,7 @@ namespace OpenERP_RV_Server.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public void Delete(int id)
         {
         }
