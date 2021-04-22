@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.ExceptionTypes;
 using OpenERP_RV_Server.Models.Account.Request;
 using OpenERP_RV_Server.Models.Account.Response;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -16,7 +19,7 @@ namespace OpenERP_RV_Server.Backend
     public class UserService : BaseService
     {
 
-        public IQueryable<User> GetUsers() 
+        public IQueryable<User> GetUsers()
         {
             return DbContext.Users.AsQueryable();
         }
@@ -39,7 +42,7 @@ namespace OpenERP_RV_Server.Backend
             newUser.IsAdmin = newCorporateOfficeID.HasValue;
             //DbContext.Users.Add(newUser);
             DbContext.Users.Add(newUser);
-           // DbContext.SaveChanges();
+            // DbContext.SaveChanges();
             return newUser;
         }
 
@@ -107,5 +110,38 @@ namespace OpenERP_RV_Server.Backend
             return response;
         }
 
+        public void MockUserSessionByToken(ActionExecutingContext context)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("corporateOfficeID")))
+                return;
+
+            string tokenBearer = context.HttpContext.Request.Headers["Authorization"];
+            var token = tokenBearer.Split(new string[] { "Bearer " }, StringSplitOptions.None)[1];
+
+            var stream = token;
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadToken(stream);
+            var tokenS = jsonToken as JwtSecurityToken;
+
+            var companyID = tokenS.Claims.First(claim => claim.Type == "companyId").Value;
+            var userName = tokenS.Claims.First(claim => claim.Type == "name").Value;
+            
+
+            var user = new GenericPrincipal(new ClaimsIdentity(userName), null);
+            HttpContext.User = user;
+
+            HttpContext.Session.SetString("companyID", companyID);
+            var corporateOfficeID = new CompanyOrganizationService().GetCorporateByCompanyID(Guid.Parse(companyID)).Id;
+            HttpContext.Session.SetString("corporateOfficeID", corporateOfficeID.ToString());
+            HttpContext.Session.SetString("userName", userName);
+            HttpContext.Session.SetString("token", token);
+
+            sw.Stop();
+
+            var elapsetMiliseconds = sw.ElapsedMilliseconds;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using OpenERP_RV_Server.DataAccess;
+﻿using Microsoft.AspNetCore.Http;
+using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.Models;
 using OpenERP_RV_Server.Models.Client.Response;
 using System;
@@ -40,9 +41,13 @@ namespace OpenERP_RV_Server.Backend
 
         }
 
-        public IQueryable<Client> GetCorporateOfficeClients(Guid corporateOfficeId)
+        public IQueryable<Client> GetCorporateOfficeClients(Guid? corporateOfficeId = null)
         {
-            var clients = DbContext.Clients.Where(w => w.CorporateOfficeId == corporateOfficeId);
+            if (corporateOfficeId == null)
+            {
+                corporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
+            }
+            var clients = DbContext.Clients.Where(w => w.CorporateOfficeId == corporateOfficeId.Value);
             return clients;
         }
         private long GetNextClientNumber(Guid corporateOfficeId)

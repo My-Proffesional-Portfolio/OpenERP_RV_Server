@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OpenERP_RV_Server.Backend;
+using OpenERP_RV_Server.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,13 +15,20 @@ namespace OpenERP_RV_Server.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [AutomaticExceptionHandler]
     public class ClientController : ControllerBase
     {
+
+        public ClientController(IHttpContextAccessor accessor)
+        {
+            BaseService.HttpContext = accessor.HttpContext;
+        }
         // GET: api/<ClientController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        [SessionTokenManager]
+        public IActionResult Get()
         {
-            return new string[] { "value1", "value2" };
+            return Ok(new ClientService().GetCorporateOfficeClients());
         }
 
         // GET api/<ClientController>/5
