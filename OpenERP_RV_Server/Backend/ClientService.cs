@@ -2,6 +2,7 @@
 using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.Models;
 using OpenERP_RV_Server.Models.Client.Response;
+using OpenERP_RV_Server.Models.PagedModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,9 +29,8 @@ namespace OpenERP_RV_Server.Backend
             newClient.ClientCompanyStatusId = clientModel.ClientCompanyStatusId;
 
             DbContext.Clients.Add(newClient);
-            //DbContext.Clients.Add(newClient);
 
-            //DbContext.SaveChanges();
+            DbContext.SaveChanges();
 
             return new ClientResponseModel()
             {
@@ -50,6 +50,26 @@ namespace OpenERP_RV_Server.Backend
             var clients = DbContext.Clients.Where(w => w.CorporateOfficeId == corporateOfficeId.Value);
             return clients;
         }
+
+        public PagedListModel<ClientModel> GetPagedClients(int currentPage = 0, int itemsPerPage = 10)
+        {
+            var queryableData = GetCorporateOfficeClients().OrderBy(o=> o.Number);
+
+            var pagedClients = queryableData.GetPagedData(currentPage, itemsPerPage);
+            var clients = pagedClients.Select(s => new ClientModel
+            {
+                Id = s.Id,
+                CompanyName = s.CompanyName,
+                DeliveryAddress = s.DeliveryAddress,
+                FiscalTaxID = s.FiscalIdentifier,
+                LegalName = s.LegalName,
+                ContactName = s.ContactName,
+                CorporateOfficeId = s.CorporateOfficeId,
+
+            }).ToList();
+            return UtilService.GetPagedEntityModel(itemsPerPage, queryableData, clients);
+        }
+
         private long GetNextClientNumber(Guid corporateOfficeId)
         {
             var corporateClients = GetCorporateOfficeClients(corporateOfficeId);

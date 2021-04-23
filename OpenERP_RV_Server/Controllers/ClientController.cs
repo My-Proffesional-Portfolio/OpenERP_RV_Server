@@ -26,9 +26,9 @@ namespace OpenERP_RV_Server.Controllers
         // GET: api/<ClientController>
         [HttpGet]
         [SessionTokenManager]
-        public IActionResult Get()
+        public IActionResult Get(int currentPage = 0, int pageSize = 10)
         {
-            return Ok(new ClientService().GetCorporateOfficeClients());
+            return Ok(new ClientService().GetPagedClients(currentPage, pageSize));
         }
 
         // GET api/<ClientController>/5

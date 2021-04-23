@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using OpenERP_RV_Server.Models.PagedModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,16 @@ namespace OpenERP_RV_Server.Backend
             var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection(section)[property];
             return configuration;
 
+        }
+
+        public static PagedListModel<T> GetPagedEntityModel<T, V>(int itemsPerPage, IQueryable<V> entityQueryData, List<T> entityModelItems)
+        {
+            PagedListModel<T> response = new PagedListModel<T>();
+            response.Items = entityModelItems;
+            response.TotalItems = entityQueryData.Count();
+            response.TotalPages = (int)Math.Ceiling(((double)response.TotalItems / (double)itemsPerPage));
+
+            return response;
         }
 
     }
