@@ -17,6 +17,15 @@ namespace OpenERP_RV_Server.Backend
 
         }
 
+        /// <summary>
+        /// Static method for get generic paged list model from T, where T is the final View Model for response
+        /// </summary>
+        /// <typeparam name="T">T is the View Model for response</typeparam>
+        /// <typeparam name="V">V is the Entity Database Model (DbSet)</typeparam>
+        /// <param name="itemsPerPage">itemsPerPage in Query</param>
+        /// <param name="entityQueryData">Raw query data from table or DbSet</param>
+        /// <param name="entityModelItems">Materialized list items for the pagedListModel</param>
+        /// <returns></returns>
         public static PagedListModel<T> GetPagedEntityModel<T, V>(int itemsPerPage, IQueryable<V> entityQueryData, List<T> entityModelItems)
         {
             PagedListModel<T> response = new PagedListModel<T>();
