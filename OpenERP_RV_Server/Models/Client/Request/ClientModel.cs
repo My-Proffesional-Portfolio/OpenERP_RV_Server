@@ -16,6 +16,8 @@ namespace OpenERP_RV_Server.Models
         public Guid? ClientCompanyStatusId { get;  set; }
         public string DeliveryAddress { get;  set; }
         public Guid Id { get; set; }
+        public long Number { get; set; }
+        public string FiscalAddress { get;  set; }
     }
    
 }

@@ -65,6 +65,8 @@ namespace OpenERP_RV_Server.Backend
                 LegalName = s.LegalName,
                 ContactName = s.ContactName,
                 CorporateOfficeId = s.CorporateOfficeId,
+                Number = s.Number,
+                FiscalAddress = s.FiscalAddress,
 
             }).ToList();
             return UtilService.GetPagedEntityModel(itemsPerPage, queryableData, clients);
