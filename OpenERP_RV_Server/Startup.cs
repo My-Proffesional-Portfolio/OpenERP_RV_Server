@@ -29,6 +29,12 @@ namespace OpenERP_RV_Server
         {
             services.AddDistributedMemoryCache();
 
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.CheckConsentNeeded = context => false; // consent required
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(60);

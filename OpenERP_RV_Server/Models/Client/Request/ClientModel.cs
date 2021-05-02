@@ -18,6 +18,8 @@ namespace OpenERP_RV_Server.Models
         public Guid Id { get; set; }
         public long Number { get; set; }
         public string FiscalAddress { get;  set; }
+        public string Email { get;  set; }
+        public string Phone { get;  set; }
     }
    
 }

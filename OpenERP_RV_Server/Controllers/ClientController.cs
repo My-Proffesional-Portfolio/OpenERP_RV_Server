@@ -41,6 +41,7 @@ namespace OpenERP_RV_Server.Controllers
 
         // POST api/<ClientController>
         [HttpPost]
+        [SessionTokenManager]
         public IActionResult Post([FromBody] ClientModel clientModel)
         {
             return Ok(new ClientService().AddNewClient(clientModel));

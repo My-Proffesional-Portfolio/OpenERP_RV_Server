@@ -18,12 +18,15 @@ namespace OpenERP_RV_Server.Backend
             var newClient = new Client();
             newClient.CorporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
             newClient.Id = Guid.NewGuid();
-            newClient.Number = GetNextClientNumber(clientModel.CorporateOfficeId);
+            newClient.Number = GetNextClientNumber(newClient.CorporateOfficeId);
             newClient.CompanyName = clientModel.CompanyName;
             newClient.LegalName = clientModel.LegalName;
             newClient.ContactName = clientModel.ContactName;
             newClient.FiscalIdentifier = clientModel.FiscalTaxID;
             newClient.DeliveryAddress = clientModel.DeliveryAddress;
+            newClient.Email = clientModel.Email;
+            newClient.Phone = clientModel.Phone;
+            newClient.FiscalAddress = clientModel.FiscalAddress;
             newClient.BusinessCategoryId = clientModel.BusinessCategoryID.HasValue ? clientModel.BusinessCategoryID.Value
                 : DbContext.BusinessCategories.FirstOrDefault(f => f.Description == "No especificado").Id;
             newClient.ClientCompanyStatusId = clientModel.ClientCompanyStatusId;
@@ -67,6 +70,8 @@ namespace OpenERP_RV_Server.Backend
                 CorporateOfficeId = s.CorporateOfficeId,
                 Number = s.Number,
                 FiscalAddress = s.FiscalAddress,
+                Phone = s.Phone,
+                Email = s.Email
 
             }).ToList();
             return UtilService.GetPagedEntityModel(itemsPerPage, queryableData, clients);

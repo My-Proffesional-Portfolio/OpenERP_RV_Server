@@ -18,6 +18,8 @@ namespace OpenERP_RV_Server.DataAccess
         public Guid CorporateOfficeId { get; set; }
         public Guid BusinessCategoryId { get; set; }
         public Guid? ClientCompanyStatusId { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
 
         public virtual BusinessCategory BusinessCategory { get; set; }
         public virtual CorporateOffice CorporateOffice { get; set; }
