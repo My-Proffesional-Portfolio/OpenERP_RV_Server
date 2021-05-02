@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OpenERP_RV_Server.Backend;
 using OpenERP_RV_Server.Filters;
+using OpenERP_RV_Server.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,8 +41,9 @@ namespace OpenERP_RV_Server.Controllers
 
         // POST api/<ClientController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public IActionResult Post([FromBody] ClientModel clientModel)
         {
+            return Ok(new ClientService().AddNewClient(clientModel));
         }
 
         // PUT api/<ClientController>/5

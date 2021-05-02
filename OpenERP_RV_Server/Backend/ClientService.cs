@@ -13,10 +13,10 @@ namespace OpenERP_RV_Server.Backend
     public class ClientService : BaseService
     {
         //public 
-        public ClientResponseModel AddNewClient(ClientModel clientModel, OpenERP_RVContext trasnsactionContext = null)
+        public ClientResponseModel AddNewClient(ClientModel clientModel)
         {
             var newClient = new Client();
-            newClient.CorporateOfficeId = clientModel.CorporateOfficeId;
+            newClient.CorporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
             newClient.Id = Guid.NewGuid();
             newClient.Number = GetNextClientNumber(clientModel.CorporateOfficeId);
             newClient.CompanyName = clientModel.CompanyName;
