@@ -21,6 +21,8 @@ namespace OpenERP_RV_Server.DataAccess
         public virtual DbSet<Client> Clients { get; set; }
         public virtual DbSet<Company> Companies { get; set; }
         public virtual DbSet<CorporateOffice> CorporateOffices { get; set; }
+        public virtual DbSet<Product> Products { get; set; }
+        public virtual DbSet<SalesConcept> SalesConcepts { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -28,8 +30,8 @@ namespace OpenERP_RV_Server.DataAccess
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=DESKTOP-VL2FT7Q\\SQLEXPRESS;Database=OpenERP_RV;Trusted_Connection=True;");
                 //optionsBuilder.UseSqlServer("Server=open-erp.database.windows.net;Database=OpenERP_RV;User Id=open-erp-admin;password=op3n3rp-070421;Trusted_Connection=False;MultipleActiveResultSets=true;");
+                optionsBuilder.UseSqlServer("Server=DESKTOP-VL2FT7Q\\SQLEXPRESS;Database=OpenERP_RV;Trusted_Connection=True;");
             }
         }
 
@@ -109,6 +111,58 @@ namespace OpenERP_RV_Server.DataAccess
                 entity.Property(e => e.Address).IsRequired();
 
                 entity.Property(e => e.Name).IsRequired();
+            });
+
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.BarCode).IsRequired();
+
+                entity.Property(e => e.Cost).HasColumnType("money");
+
+                entity.Property(e => e.CreationDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Description).IsRequired();
+
+                entity.Property(e => e.Price).HasColumnType("money");
+
+                entity.Property(e => e.ProductName).IsRequired();
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
+
+                entity.HasOne(d => d.CorporateOffice)
+                    .WithMany(p => p.Products)
+                    .HasForeignKey(d => d.CorporateOfficeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Products__Corpor__4E88ABD4");
+            });
+
+            modelBuilder.Entity<SalesConcept>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Cost).HasColumnType("money");
+
+                entity.Property(e => e.CreationDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Description).IsRequired();
+
+                entity.Property(e => e.Price).HasColumnType("money");
+
+                entity.Property(e => e.ServiceName).IsRequired();
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
+
+                entity.HasOne(d => d.CorporateOffice)
+                    .WithMany(p => p.SalesConcepts)
+                    .HasForeignKey(d => d.CorporateOfficeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__SalesConc__Corpo__52593CB8");
             });
 
             modelBuilder.Entity<User>(entity =>

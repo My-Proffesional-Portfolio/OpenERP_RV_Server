@@ -4,6 +4,7 @@ using OpenERP_RV_Server.ExceptionTypes;
 using OpenERP_RV_Server.Models;
 using OpenERP_RV_Server.Models.Client.Response;
 using OpenERP_RV_Server.Models.CompanyOrganization;
+using OpenERP_RV_Server.Models.SalesConcept;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,17 @@ namespace OpenERP_RV_Server.Backend
                     CorporateOfficeId = newCorporateOffice.Id,
                     FiscalTaxID = "XAXX010101000"
                 });
+                AddGenericConcept(new ConceptsModel { 
+                    Cost = null,
+                    Price = 0m,
+                    InternalCode  = "OPEN_ERP_GENERIC_SERVICE",
+                    Number = 1000,
+                    Description = "CONCEPTO GENÉRICO DE VENTA",
+                    Id = Guid.NewGuid(),
+                    Name = "Concepto de venta genérico.",
+                    CorporateOfficeId = newCorporateOffice.Id,
+                   
+                });
 
                 result = new NewCompanyOrganizationResult();
                 result.LegalName = newCompany.LegalName;
@@ -51,6 +63,22 @@ namespace OpenERP_RV_Server.Backend
             {
                 throw new FriendlyTransactionException("No se pudo completar la transacción: " + ex.Message);
             }
+        }
+
+        private void AddGenericConcept(ConceptsModel conceptsModel)
+        {
+            var newService = new SalesConcept();
+            newService.Id = conceptsModel.Id;
+            newService.CorporateOfficeId = conceptsModel.CorporateOfficeId;
+            newService.Cost = conceptsModel.Cost;
+            newService.Price = conceptsModel.Price;
+            newService.ServiceName = conceptsModel.Name;
+            newService.Number = conceptsModel.Number;
+            newService.CreationDate = DateTime.Now;
+            newService.Description = conceptsModel.Description;
+            newService.InternalCode = conceptsModel.InternalCode;
+            DbContext.SalesConcepts.Add(newService);
+
         }
 
         private ClientResponseModel AddNewCorporativeDefaultClient(ClientModel clientModel)
