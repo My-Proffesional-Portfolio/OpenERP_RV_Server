@@ -81,7 +81,7 @@ namespace OpenERP_RV_Server.Backend
 
         }
 
-        private ClientResponseModel AddNewCorporativeDefaultClient(ClientModel clientModel)
+        private ConfirmationResponseModel AddNewCorporativeDefaultClient(ClientModel clientModel)
         {
             var newClient = new Client();
             newClient.CorporateOfficeId = clientModel.CorporateOfficeId;
@@ -100,11 +100,11 @@ namespace OpenERP_RV_Server.Backend
 
             //DbContext.SaveChanges();
 
-            return new ClientResponseModel()
+            return new ConfirmationResponseModel()
             {
                 Id = newClient.Id,
                 CorporateOfficeID = newClient.CorporateOfficeId,
-                ClientNumber = newClient.Number
+                Number = newClient.Number
             };
 
         }

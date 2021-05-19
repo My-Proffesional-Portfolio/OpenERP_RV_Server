@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OpenERP_RV_Server.Backend;
+using OpenERP_RV_Server.Filters;
+using OpenERP_RV_Server.Models.Product;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,36 +15,21 @@ namespace OpenERP_RV_Server.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        // GET: api/<ProductController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
         // GET api/<ProductController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        [SessionTokenManager]
+        public IActionResult Get(int currentPage = 0, int pageSize = 10)
         {
-            return "value";
+            return Ok(new ProductService().GetAllProducts(currentPage, pageSize));
         }
 
         // POST api/<ProductController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        [SessionTokenManager]
+        public IActionResult Post([FromBody] ProductModel productModel)
         {
+            return Ok(new ProductService().AddNewProduct(productModel));
         }
 
-        // PUT api/<ProductController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<ProductController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

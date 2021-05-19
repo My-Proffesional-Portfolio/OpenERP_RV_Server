@@ -13,7 +13,7 @@ namespace OpenERP_RV_Server.Backend
     public class ClientService : BaseService
     {
         //public 
-        public ClientResponseModel AddNewClient(ClientModel clientModel)
+        public ConfirmationResponseModel AddNewClient(ClientModel clientModel)
         {
             var newClient = new Client();
             newClient.CorporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
@@ -35,11 +35,11 @@ namespace OpenERP_RV_Server.Backend
 
             DbContext.SaveChanges();
 
-            return new ClientResponseModel()
+            return new ConfirmationResponseModel()
             {
                 Id = newClient.Id,
                 CorporateOfficeID = newClient.CorporateOfficeId,
-                ClientNumber = newClient.Number
+                Number = newClient.Number
             };
 
         }

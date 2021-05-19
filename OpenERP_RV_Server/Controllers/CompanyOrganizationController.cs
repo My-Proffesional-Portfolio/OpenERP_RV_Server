@@ -40,10 +40,5 @@ namespace OpenERP_RV_Server.Controllers
 
         }
 
-        [HttpDelete("{id}")]
-        [Authorize]
-        public void Delete(int id)
-        {
-        }
     }
 }

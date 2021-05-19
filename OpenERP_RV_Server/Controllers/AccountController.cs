@@ -25,6 +25,7 @@ namespace OpenERP_RV_Server.Controllers
         {
             BaseService.HttpContext = accessor.HttpContext;
         }
+
         // GET: api/<AccountController>
         [HttpGet]
         [Route("currentSession")]
@@ -45,11 +46,5 @@ namespace OpenERP_RV_Server.Controllers
             return Ok(user);
         }
 
-        // DELETE api/<AccountController>/5
-        [HttpDelete()]
-        [Route("logout")]
-        public void Delete(int id)
-        {
-        }
     }
 }

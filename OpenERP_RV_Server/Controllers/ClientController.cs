@@ -19,7 +19,6 @@ namespace OpenERP_RV_Server.Controllers
     [AutomaticExceptionHandler]
     public class ClientController : ControllerBase
     {
-
         public ClientController(IHttpContextAccessor accessor)
         {
             BaseService.HttpContext = accessor.HttpContext;
@@ -32,13 +31,6 @@ namespace OpenERP_RV_Server.Controllers
             return Ok(new ClientService().GetPagedClients(currentPage, pageSize));
         }
 
-        // GET api/<ClientController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
         // POST api/<ClientController>
         [HttpPost]
         [SessionTokenManager]
@@ -47,16 +39,5 @@ namespace OpenERP_RV_Server.Controllers
             return Ok(new ClientService().AddNewClient(clientModel));
         }
 
-        // PUT api/<ClientController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<ClientController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

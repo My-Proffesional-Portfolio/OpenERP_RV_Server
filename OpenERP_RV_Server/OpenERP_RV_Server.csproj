@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DataAccess\" />
+    <Folder Include="Models\Client\Request\" />
   </ItemGroup>
 
 </Project>
