@@ -7,6 +7,12 @@ namespace OpenERP_RV_Server.DataAccess
 {
     public partial class Company
     {
+        public Company()
+        {
+            Expenses = new HashSet<Expense>();
+            Suppliers = new HashSet<Supplier>();
+        }
+
         public Guid Id { get; set; }
         public Guid CorporateOfficeId { get; set; }
         public string FiscalIdentifier { get; set; }
@@ -20,5 +26,7 @@ namespace OpenERP_RV_Server.DataAccess
 
         public virtual BusinessCategory BusinessCategory { get; set; }
         public virtual CorporateOffice CorporateOffice { get; set; }
+        public virtual ICollection<Expense> Expenses { get; set; }
+        public virtual ICollection<Supplier> Suppliers { get; set; }
     }
 }

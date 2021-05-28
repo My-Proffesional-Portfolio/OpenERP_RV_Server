@@ -21,15 +21,17 @@ namespace OpenERP_RV_Server.DataAccess
         public virtual DbSet<Client> Clients { get; set; }
         public virtual DbSet<Company> Companies { get; set; }
         public virtual DbSet<CorporateOffice> CorporateOffices { get; set; }
+        public virtual DbSet<Expense> Expenses { get; set; }
+        public virtual DbSet<ExpenseItem> ExpenseItems { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<SalesConcept> SalesConcepts { get; set; }
+        public virtual DbSet<Supplier> Suppliers { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Server=open-erp.database.windows.net;Database=OpenERP_RV;User Id=open-erp-admin;password=op3n3rp-070421;Trusted_Connection=False;MultipleActiveResultSets=true;");
                 //optionsBuilder.UseSqlServer("Server=DESKTOP-VL2FT7Q\\SQLEXPRESS;Database=OpenERP_RV;Trusted_Connection=True;");
             }
@@ -113,6 +115,94 @@ namespace OpenERP_RV_Server.DataAccess
                 entity.Property(e => e.Name).IsRequired();
             });
 
+            modelBuilder.Entity<Expense>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.AnotherTaxes).HasColumnType("money");
+
+                entity.Property(e => e.Cfdiuse)
+                    .HasMaxLength(128)
+                    .HasColumnName("CFDIUse");
+
+                entity.Property(e => e.Cfdiversion)
+                    .HasMaxLength(128)
+                    .HasColumnName("CFDIVersion");
+
+                entity.Property(e => e.CreationDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Currency)
+                    .IsRequired()
+                    .HasMaxLength(128);
+
+                entity.Property(e => e.ExchangeRate)
+                    .HasColumnType("money")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.ExpenseDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Number).IsRequired();
+
+                entity.Property(e => e.PaymentMethod).HasMaxLength(128);
+
+                entity.Property(e => e.PaymentTerm).HasMaxLength(128);
+
+                entity.Property(e => e.ReceiverRfc).HasColumnName("ReceiverRFC");
+
+                entity.Property(e => e.Subtotal).HasColumnType("money");
+
+                entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
+
+                entity.Property(e => e.SupplierRfc).HasColumnName("SupplierRFC");
+
+                entity.Property(e => e.Tax)
+                    .HasColumnType("money")
+                    .HasColumnName("TAX");
+
+                entity.Property(e => e.Total).HasColumnType("money");
+
+                entity.Property(e => e.Uuid).HasColumnName("UUID");
+
+                entity.Property(e => e.Xml).HasColumnName("XML");
+
+                entity.HasOne(d => d.Company)
+                    .WithMany(p => p.Expenses)
+                    .HasForeignKey(d => d.CompanyId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Expenses__Compan__7E37BEF6");
+
+                entity.HasOne(d => d.Supplier)
+                    .WithMany(p => p.Expenses)
+                    .HasForeignKey(d => d.SupplierId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Expenses__Suppli__7D439ABD");
+            });
+
+            modelBuilder.Entity<ExpenseItem>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(128);
+
+                entity.Property(e => e.Importe).HasColumnType("money");
+
+                entity.Property(e => e.Quantity).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.TotalTaxes).HasColumnType("money");
+
+                entity.Property(e => e.Unidad).HasMaxLength(128);
+
+                entity.Property(e => e.UnitPrice).HasColumnType("money");
+
+                entity.HasOne(d => d.Expense)
+                    .WithMany(p => p.ExpenseItems)
+                    .HasForeignKey(d => d.ExpenseId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ExpenseIt__Expen__00200768");
+            });
+
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
@@ -163,6 +253,33 @@ namespace OpenERP_RV_Server.DataAccess
                     .HasForeignKey(d => d.CorporateOfficeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__SalesConc__Corpo__52593CB8");
+            });
+
+            modelBuilder.Entity<Supplier>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.CompanyName).IsRequired();
+
+                entity.Property(e => e.ContactName).IsRequired();
+
+                entity.Property(e => e.Email).IsRequired();
+
+                entity.Property(e => e.Phone).IsRequired();
+
+                entity.Property(e => e.Rfc)
+                    .IsRequired()
+                    .HasColumnName("RFC");
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
+
+                entity.HasOne(d => d.Company)
+                    .WithMany(p => p.Suppliers)
+                    .HasForeignKey(d => d.CompanyId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Suppliers__Compa__7C4F7684");
             });
 
             modelBuilder.Entity<User>(entity =>
