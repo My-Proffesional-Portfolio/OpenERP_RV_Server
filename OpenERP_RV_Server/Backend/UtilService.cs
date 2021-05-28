@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using OpenERP_RV_Server.Models.PagedModels;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace OpenERP_RV_Server.Backend
 {
@@ -35,6 +38,45 @@ namespace OpenERP_RV_Server.Backend
 
             return response;
         }
+
+
+        public static string ReadFormFileAsync(IFormFile file)
+        {
+            var xmlString = "";
+            if (file == null || file.Length == 0)
+            {
+                return null;
+            }
+
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                xmlString = reader.ReadToEnd();
+            }
+
+            return xmlString;
+        }
+
+        public static T Deserialize<T>(string input) where T : class
+        {
+            System.Xml.Serialization.XmlSerializer ser = new System.Xml.Serialization.XmlSerializer(typeof(T));
+
+            using (StringReader sr = new StringReader(input))
+            {
+                return (T)ser.Deserialize(sr);
+            }
+        }
+
+        public static string Serialize<T>(T ObjectToSerialize)
+        {
+            XmlSerializer xmlSerializer = new XmlSerializer(ObjectToSerialize.GetType());
+
+            using (StringWriter textWriter = new StringWriter())
+            {
+                xmlSerializer.Serialize(textWriter, ObjectToSerialize);
+                return textWriter.ToString();
+            }
+        }
+
 
     }
 }
