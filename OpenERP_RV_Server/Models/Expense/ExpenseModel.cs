@@ -13,5 +13,8 @@ namespace OpenERP_RV_Server.Models.Expense
         public decimal Subtotal { get; set; }
         public string CurrencyCode { get; set; }
         public decimal ExchangeRate { get; set; }
+        public string SupplierName { get; set; }
+        public string SupplierTaxID { get; set; }
+        public string ReceiverTaxID { get; set; }
     }
 }

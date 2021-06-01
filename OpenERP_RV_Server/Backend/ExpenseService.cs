@@ -12,18 +12,18 @@ namespace OpenERP_RV_Server.Backend
     public class ExpenseService : BaseService
     {
 
-        public ExpenseModel AddExpenseFromCFDI(IFormFile xml)
+        public ExpenseModel AddExpenseFromCFDI(IFormFile xml, bool saveXML)
         {
             var xmlString = UtilService.ReadFormFileAsync(xml);
             var cfdi = UtilService.Deserialize<Comprobante>(xmlString);
 
-            var provider = DbContext.Suppliers.Where(w => w.Rfc == cfdi.Emisor.Rfc).FirstOrDefault();
+            var provider = DbContext.Suppliers.Where(w => w.Rfc == cfdi.Emisor.Rfc && w.CompanyId == Guid.Parse(HttpContext.Session.GetString("companyID"))).FirstOrDefault();
 
             if (provider == null)
             {
                 var newProvider = new Supplier();
                 newProvider.Id = Guid.NewGuid();
-                newProvider.CompanyId = Guid.Parse("F6E973AB-B04C-4414-9597-42D484BBB26D");
+                newProvider.CompanyId = Guid.Parse(HttpContext.Session.GetString("companyID"));
                 newProvider.AddressLocation = cfdi.LugarExpedicion;
                 newProvider.CompanyName = cfdi.Emisor.Nombre;
                 newProvider.LegalName = cfdi.Emisor.Nombre;
@@ -42,8 +42,8 @@ namespace OpenERP_RV_Server.Backend
 
             var expense = new Expense();
             expense.Id = Guid.NewGuid();
-            expense.CompanyId = Guid.Parse("F6E973AB-B04C-4414-9597-42D484BBB26D");
-            expense.Xml = xmlString;
+            expense.CompanyId = Guid.Parse(HttpContext.Session.GetString("companyID"));
+            expense.Xml = saveXML ? xmlString : null;
             expense.SupplierId = provider.Id;
             expense.Total = cfdi.Total;
             expense.Subtotal = cfdi.SubTotal;
@@ -62,7 +62,20 @@ namespace OpenERP_RV_Server.Backend
             DbContext.SaveChanges();
 
 
-            return null;
+            var response =  new ExpenseModel()
+            {
+                CurrencyCode = expense.Currency,
+                Total = expense.Total,
+                Subtotal = expense.Subtotal.HasValue ? expense.Subtotal.Value : 0m,
+                SupplierName = expense.Supplier.CompanyName,
+                SupplierTaxID = expense.SupplierRfc,
+                ReceiverTaxID = expense.ReceiverRfc,
+                ExchangeRate = expense.ExchangeRate,
+                CompanyID = expense.CompanyId,
+                Id = expense.Id,
+            };
+
+            return response;
         }
 
         public List<ExpenseModel> GetAllExpenses()

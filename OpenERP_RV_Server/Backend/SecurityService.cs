@@ -82,7 +82,7 @@ namespace OpenERP_RV_Server.Backend
             var token = new JwtSecurityToken(UtilService.GetAppSettingsConfiguration("security", "issuer"),
               UtilService.GetAppSettingsConfiguration("security", "audicence"), claims: permClaims,
               null,
-              expires: DateTime.Now.AddMinutes(60),
+              expires: DateTime.Now.AddMinutes(600),
               signingCredentials: credentials);
 
             //TODO: get time from token object

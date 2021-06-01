@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OpenERP_RV_Server.Backend;
 using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.Filters;
+using OpenERP_RV_Server.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,33 +17,39 @@ namespace OpenERP_RV_Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [AutomaticExceptionHandler]
     public class ExpenseController : ControllerBase
     {
 
-        [HttpPost]
-        [Route("uploadCFDI")]
-        //[SessionTokenManager]
-        public IActionResult Post([FromForm] IFormFile xml)
+        public ExpenseController(IHttpContextAccessor accessor)
         {
-            for (int i = 0; i < 35000; i++)
-            {
-                new ExpenseService().AddExpenseFromCFDI(xml);
-            }
-            
-            return Ok(null);
+            BaseService.HttpContext = accessor.HttpContext;
         }
 
-        [HttpGet]
+        [HttpPost, DisableRequestSizeLimit]
         [Route("uploadCFDI")]
-        //[SessionTokenManager]
-        public IActionResult Get()
+        [SessionTokenManager]
+        //[Consumes("multipart/form-data")]
+        public IActionResult Post([FromForm] IFormFile file)
         {
-            new ExpenseService().GetAllExpenses();
-            return Ok();
-            
+            //var files = Request.Form.Files;
+            //for (int i = 0; i < 25000; i++)
+            //{
+           
+            //}
+            return Ok(new ExpenseService().AddExpenseFromCFDI(file, true));
         }
+
+        //[HttpGet]
+        //[Route("uploadCFDI")]
+        //[SessionTokenManager]
+        //public IActionResult Get()
+        //{
+        //    new ExpenseService().GetAllExpenses();
+        //    return Ok();
+
+        //}
 
 
     }

@@ -37,12 +37,15 @@ namespace OpenERP_RV_Server
 
             services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(60);
+                options.IdleTimeout = TimeSpan.FromMinutes(600);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
 
-
+            services.AddControllers(options =>
+            {
+                options.RespectBrowserAcceptHeader = true; // false by default
+            });
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
