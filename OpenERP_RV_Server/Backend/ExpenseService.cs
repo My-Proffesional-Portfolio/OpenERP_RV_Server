@@ -14,12 +14,24 @@ namespace OpenERP_RV_Server.Backend
     public class ExpenseService : BaseService
     {
 
+        public List<ExpenseModel> ProcessFiles(List<IFormFile> files)
+        {
+            var response = new List<ExpenseModel>();
+
+            foreach (var f in files)
+            {
+                response.Add(new ExpenseService().AddExpenseFromCFDI(f, true));
+            }
+
+            return response;
+        }
+
         public ExpenseModel AddExpenseFromCFDI(IFormFile xml, bool saveXML)
         {
             var xmlString = UtilService.ReadFormFileAsync(xml);
             var cfdi = UtilService.Deserialize<Comprobante>(xmlString);
 
-            var companyID = Guid.Parse(HttpContext.Session.GetString("companyID"));
+            var companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
             //var companyID = Guid.Parse(BaseService.companyID);
 
             var provider = DbContext.Suppliers.Where(w => w.Rfc == cfdi.Emisor.Rfc && w.CompanyId == companyID).FirstOrDefault();
@@ -28,7 +40,7 @@ namespace OpenERP_RV_Server.Backend
             {
                 var newProvider = new Supplier();
                 newProvider.Id = Guid.NewGuid();
-                newProvider.CompanyId = Guid.Parse(HttpContext.Session.GetString("companyID"));
+                newProvider.CompanyId = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
                 newProvider.AddressLocation = cfdi.LugarExpedicion;
                 newProvider.CompanyName = cfdi.Emisor.Nombre;
                 newProvider.LegalName = cfdi.Emisor.Nombre;
@@ -51,7 +63,7 @@ namespace OpenERP_RV_Server.Backend
 
             var expense = new Expense();
             expense.Id = Guid.NewGuid();
-            expense.CompanyId = Guid.Parse(HttpContext.Session.GetString("companyID"));
+            expense.CompanyId = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
             expense.Xml = saveXML ? xmlString : null;
             expense.SupplierId = provider.Id;
             expense.Total = cfdi.Total;
@@ -133,10 +145,22 @@ namespace OpenERP_RV_Server.Backend
         //    }
         //}
 
-        public PagedListModel<ExpenseModel> GetAllExpenses(int currentPage = 0, int itemsPerPage = 10)
+        public PagedListModel<ExpenseModel> GetAllExpenses(int currentPage = 0, int itemsPerPage = 10, string searchTerm = "",
+            DateTime? emissionStartDate = null, DateTime? emissionEndDate = null,
+             DateTime? creationStartDate = null, DateTime? creationEndDate = null)
         {
             var queryableData = GetCompanyExpenses().OrderBy(o => o.CreationDate);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+                queryableData = (IOrderedQueryable<Expense>)queryableData
+                    .Where(w => w.Supplier.CompanyName.Contains(searchTerm)
+                     || w.SupplierRfc.Contains(searchTerm)
+                     || w.Supplier.Email.Contains(searchTerm));
+
             var pagedExpenses = queryableData.GetPagedData(currentPage, itemsPerPage);
+
+
+
 
             var expenses = pagedExpenses.Select(s => new ExpenseModel
             {
@@ -166,7 +190,7 @@ namespace OpenERP_RV_Server.Backend
         {
             if (companyID == null)
             {
-                companyID = Guid.Parse(HttpContext.Session.GetString("companyID"));
+                companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
             }
 
             var expenses = DbContext.Expenses.Where(w => w.CompanyId == companyID.Value);

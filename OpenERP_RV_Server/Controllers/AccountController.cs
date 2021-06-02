@@ -23,7 +23,7 @@ namespace OpenERP_RV_Server.Controllers
         //https://stackoverflow.com/questions/42731686/using-httpcontext-outside-of-a-controller
         public AccountController(IHttpContextAccessor accessor)
         {
-            BaseService.HttpContext = accessor.HttpContext;
+            BaseService.accessor = accessor;
         }
 
         // GET: api/<AccountController>

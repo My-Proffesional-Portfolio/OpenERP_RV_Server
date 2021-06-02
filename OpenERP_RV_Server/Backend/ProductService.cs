@@ -44,7 +44,7 @@ namespace OpenERP_RV_Server.Backend
         public ConfirmationResponseModel AddNewProduct(ProductModel productModel)
         {
             var newProduct = new Product();
-            newProduct.CorporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
+            newProduct.CorporateOfficeId = Guid.Parse(accessor.HttpContext.Session.GetString("corporateOfficeID"));
             newProduct.Id = Guid.NewGuid();
             newProduct.Number = GetNextProductNumber(newProduct.CorporateOfficeId);
             newProduct.Price = productModel.Price;
@@ -73,7 +73,7 @@ namespace OpenERP_RV_Server.Backend
         {
             if (corporateOfficeId == null)
             {
-                corporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
+                corporateOfficeId = Guid.Parse(accessor.HttpContext.Session.GetString("corporateOfficeID"));
             }
 
             var products = DbContext.Products.Where(w => w.CorporateOfficeId == corporateOfficeId.Value);

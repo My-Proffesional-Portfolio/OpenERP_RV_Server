@@ -21,7 +21,7 @@ namespace OpenERP_RV_Server.Controllers
     {
         public ClientController(IHttpContextAccessor accessor)
         {
-            BaseService.HttpContext = accessor.HttpContext;
+            BaseService.accessor = accessor;
         }
         // GET: api/<ClientController>
         [HttpGet]

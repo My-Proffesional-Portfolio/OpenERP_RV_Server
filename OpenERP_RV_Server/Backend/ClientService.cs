@@ -16,7 +16,7 @@ namespace OpenERP_RV_Server.Backend
         public ConfirmationResponseModel AddNewClient(ClientModel clientModel)
         {
             var newClient = new Client();
-            newClient.CorporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
+            newClient.CorporateOfficeId = Guid.Parse(accessor.HttpContext.Session.GetString("corporateOfficeID"));
             newClient.Id = Guid.NewGuid();
             newClient.Number = GetNextClientNumber(newClient.CorporateOfficeId);
             newClient.CompanyName = clientModel.CompanyName;
@@ -48,7 +48,7 @@ namespace OpenERP_RV_Server.Backend
         {
             if (corporateOfficeId == null)
             {
-                corporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
+                corporateOfficeId = Guid.Parse(accessor.HttpContext.Session.GetString("corporateOfficeID"));
             }
             var clients = DbContext.Clients.Where(w => w.CorporateOfficeId == corporateOfficeId.Value);
             return clients;

@@ -77,12 +77,12 @@ namespace OpenERP_RV_Server.Backend
 
                 //https://stackoverflow.com/questions/39920954/asp-core-how-to-set-httpcontext-user
                 var user = new GenericPrincipal(new ClaimsIdentity(response.UserName), null);
-                HttpContext.User = user;
+                accessor.HttpContext.User = user;
 
-                HttpContext.Session.SetString("companyID", response.CompanyID);
-                HttpContext.Session.SetString("corporateOfficeID", response.CorporateOfficeID);
-                HttpContext.Session.SetString("userName", response.UserName);
-                HttpContext.Session.SetString("token", token);
+                accessor.HttpContext.Session.SetString("companyID", response.CompanyID);
+                accessor.HttpContext.Session.SetString("corporateOfficeID", response.CorporateOfficeID);
+                accessor.HttpContext.Session.SetString("userName", response.UserName);
+                accessor.HttpContext.Session.SetString("token", token);
 
             }
             else
@@ -103,9 +103,9 @@ namespace OpenERP_RV_Server.Backend
         public LoginSessionData GetCurrentUserSession()
         {
             var response = new LoginSessionData();
-            response.CurrentUserName = HttpContext.Session.GetString("userName");
-            response.CurrentToken = HttpContext.Session.GetString("token");
-            response.CompanyLogged = HttpContext.Session.GetString("companyID");
+            response.CurrentUserName = accessor.HttpContext.Session.GetString("userName");
+            response.CurrentToken = accessor.HttpContext.Session.GetString("token");
+            response.CompanyLogged = accessor.HttpContext.Session.GetString("companyID");
 
             return response;
         }
@@ -115,7 +115,7 @@ namespace OpenERP_RV_Server.Backend
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("corporateOfficeID")))
+            if (!string.IsNullOrEmpty(accessor.HttpContext.Session.GetString("corporateOfficeID")))
                 return;
 
             string tokenBearer = context.HttpContext.Request.Headers["Authorization"];
@@ -131,13 +131,13 @@ namespace OpenERP_RV_Server.Backend
             
 
             var user = new GenericPrincipal(new ClaimsIdentity(userName), null);
-            HttpContext.User = user;
+            accessor.HttpContext.User = user;
 
-            HttpContext.Session.SetString("companyID", companyID);
+            accessor.HttpContext.Session.SetString("companyID", companyID);
             var corporateOfficeID = new CompanyOrganizationService().GetCorporateByCompanyID(Guid.Parse(companyID)).Id;
-            HttpContext.Session.SetString("corporateOfficeID", corporateOfficeID.ToString());
-            HttpContext.Session.SetString("userName", userName);
-            HttpContext.Session.SetString("token", token);
+            accessor.HttpContext.Session.SetString("corporateOfficeID", corporateOfficeID.ToString());
+            accessor.HttpContext.Session.SetString("userName", userName);
+            accessor.HttpContext.Session.SetString("token", token);
 
             BaseService.corporateOfficeID = corporateOfficeID.ToString();
             BaseService.companyID = companyID.ToString();

@@ -22,5 +22,7 @@ namespace OpenERP_RV_Server.Backend
             return _dbContext;
         }
         public static HttpContext HttpContext { get;  set; }
+
+        public static IHttpContextAccessor accessor { get; set; }
     }
 }

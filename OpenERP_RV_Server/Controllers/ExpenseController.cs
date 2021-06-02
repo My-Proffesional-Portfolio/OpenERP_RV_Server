@@ -22,10 +22,11 @@ namespace OpenERP_RV_Server.Controllers
     [AutomaticExceptionHandler]
     public class ExpenseController : ControllerBase
     {
-
+        //https://github.com/davidfowl/AspNetCoreDiagnosticScenarios/blob/master/AspNetCoreGuidance.md#do-not-store-ihttpcontextaccessorhttpcontext-in-a-field
+        //This example stores the IHttpContextAccesor itself in a field and uses the HttpContext field at the correct time(checking for null).
         public ExpenseController(IHttpContextAccessor accessor)
         {
-            BaseService.HttpContext = accessor.HttpContext;
+            BaseService.accessor = accessor;
         }
 
         [HttpPost, DisableRequestSizeLimit]
@@ -34,29 +35,20 @@ namespace OpenERP_RV_Server.Controllers
         //[Consumes("multipart/form-data")]
         public IActionResult Post([FromForm] List<IFormFile> files)
         {
-
-            var filesReq = Request.Form.Files;
-            var response = new List<ExpenseModel>();
-
-            foreach (var f in filesReq)
-            {
-                response.Add(new ExpenseService().AddExpenseFromCFDI(f, true));
-            }
-            return Ok(response);
-
-            //for (int i = 0; i < 250; i++)
-            //{
-            //    new expenseservice().addexpensefromcfdi(file, true);
-            //}
-
+            var filesReq = Request.Form.Files.ToList();
+            return Ok(new ExpenseService().ProcessFiles(filesReq));
         }
+
+
 
         [HttpGet]
         [SessionTokenManager]
-        public IActionResult Get(int currentPage = 0, int pageSize = 10)
+        public IActionResult Get(int currentPage = 0, int pageSize = 10,
+            string searchTerm = "", DateTime? emissionStartDate = null, DateTime? emissionEndDate = null,
+             DateTime? creationStartDate = null, DateTime? creationEndDate = null)
         {
 
-            return Ok(new ExpenseService().GetAllExpenses(currentPage, pageSize));
+            return Ok(new ExpenseService().GetAllExpenses(currentPage, pageSize, searchTerm));
 
         }
 

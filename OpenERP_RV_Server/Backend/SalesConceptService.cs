@@ -15,7 +15,7 @@ namespace OpenERP_RV_Server.Backend
         {
             if (corporateOfficeId == null)
             {
-                corporateOfficeId = Guid.Parse(HttpContext.Session.GetString("corporateOfficeID"));
+                corporateOfficeId = Guid.Parse(accessor.HttpContext.Session.GetString("corporateOfficeID"));
             }
             var concepts = DbContext.SalesConcepts.Where(w => w.CorporateOfficeId == corporateOfficeId.Value);
             return concepts;
