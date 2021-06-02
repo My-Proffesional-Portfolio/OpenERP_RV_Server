@@ -45,6 +45,10 @@ namespace OpenERP_RV_Server.Backend
             var tfd = cfdi.Complemento.SelectMany(sm => sm.Any).Where(w => w.Name.Contains("tfd:TimbreFiscalDigital")).Select(s => s.Attributes);
             var uuid = tfd.ToList().FirstOrDefault().GetNamedItem("UUID").Value;
 
+            if (GetCompanyExpenses().Any(f => f.Uuid == Guid.Parse(uuid)))
+                throw new Exception("No se pudo guardar la factura con Folio fiscal " + uuid + " , ya ha sido ingresada anteriormente");
+
+
             var expense = new Expense();
             expense.Id = Guid.NewGuid();
             expense.CompanyId = Guid.Parse(HttpContext.Session.GetString("companyID"));
