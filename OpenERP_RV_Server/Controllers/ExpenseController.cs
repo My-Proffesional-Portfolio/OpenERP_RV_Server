@@ -5,6 +5,7 @@ using OpenERP_RV_Server.Backend;
 using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.Filters;
 using OpenERP_RV_Server.Models;
+using OpenERP_RV_Server.Models.Expense;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,25 +32,33 @@ namespace OpenERP_RV_Server.Controllers
         [Route("uploadCFDI")]
         [SessionTokenManager]
         //[Consumes("multipart/form-data")]
-        public IActionResult Post([FromForm] IFormFile file)
+        public IActionResult Post([FromForm] List<IFormFile> files)
         {
-            //var files = Request.Form.Files;
-            //for (int i = 0; i < 25000; i++)
+
+            var filesReq = Request.Form.Files;
+            var response = new List<ExpenseModel>();
+
+            foreach (var f in filesReq)
+            {
+                response.Add(new ExpenseService().AddExpenseFromCFDI(f, true));
+            }
+            return Ok(response);
+
+            //for (int i = 0; i < 250; i++)
             //{
-           
+            //    new expenseservice().addexpensefromcfdi(file, true);
             //}
-            return Ok(new ExpenseService().AddExpenseFromCFDI(file, true));
+
         }
 
-        //[HttpGet]
-        //[Route("uploadCFDI")]
-        //[SessionTokenManager]
-        //public IActionResult Get()
-        //{
-        //    new ExpenseService().GetAllExpenses();
-        //    return Ok();
+        [HttpGet]
+        [SessionTokenManager]
+        public IActionResult Get(int currentPage = 0, int pageSize = 10)
+        {
 
-        //}
+            return Ok(new ExpenseService().GetAllExpenses(currentPage, pageSize));
+
+        }
 
 
     }

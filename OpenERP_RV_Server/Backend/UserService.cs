@@ -139,6 +139,11 @@ namespace OpenERP_RV_Server.Backend
             HttpContext.Session.SetString("userName", userName);
             HttpContext.Session.SetString("token", token);
 
+            BaseService.corporateOfficeID = corporateOfficeID.ToString();
+            BaseService.companyID = companyID.ToString();
+            BaseService.userName = userName;
+
+
             sw.Stop();
 
             var elapsetMiliseconds = sw.ElapsedMilliseconds;

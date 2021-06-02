@@ -190,6 +190,8 @@ namespace OpenERP_RV_Server.DataAccess
 
                 entity.Property(e => e.Quantity).HasColumnType("decimal(18, 0)");
 
+                entity.Property(e => e.Discount).HasColumnType("decimal(18, 0)");
+
                 entity.Property(e => e.TotalTaxes).HasColumnType("money");
 
                 entity.Property(e => e.Unidad).HasMaxLength(128);

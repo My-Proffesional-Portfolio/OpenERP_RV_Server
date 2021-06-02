@@ -37,7 +37,7 @@ namespace OpenERP_RV_Server
 
             services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(600);
+                options.IdleTimeout = TimeSpan.FromDays(365);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });

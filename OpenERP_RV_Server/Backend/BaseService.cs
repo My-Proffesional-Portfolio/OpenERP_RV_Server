@@ -12,6 +12,9 @@ namespace OpenERP_RV_Server.Backend
     {
         //protected  OpenERP_RVContext DbContext = new OpenERP_RVContext();
         public OpenERP_RVContext DbContext = new OpenERP_RVContext();
+        public static string corporateOfficeID;
+        public static string companyID;
+        public static string userName;
 
         protected  OpenERP_RVContext GetScopedDbContext(OpenERP_RVContext trasnsactionContext = null)
         {
