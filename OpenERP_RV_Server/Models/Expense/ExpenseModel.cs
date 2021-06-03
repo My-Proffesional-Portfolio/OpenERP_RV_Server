@@ -25,6 +25,8 @@ namespace OpenERP_RV_Server.Models.Expense
         public DateTime ExpenseDate { get;  set; }
         public DateTime CreationDate { get; internal set; }
         public bool HasXML { get; internal set; }
+        public string Info { get; set; }
+        public string XML { get; internal set; }
     }
 
     public class ExpenseItemModel {

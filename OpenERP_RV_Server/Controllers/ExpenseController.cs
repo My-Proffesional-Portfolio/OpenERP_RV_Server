@@ -52,6 +52,15 @@ namespace OpenERP_RV_Server.Controllers
 
         }
 
+        [HttpGet]
+        [SessionTokenManager]
+        [Route("detail")]
+        public IActionResult Get(Guid id)
+        {
+            return Ok(new ExpenseService().GetExpenseById(id));
+        }
+
+
 
     }
 }

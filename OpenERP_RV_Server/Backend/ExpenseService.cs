@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.Models.Expense;
 using OpenERP_RV_Server.Models.PagedModels;
@@ -20,8 +21,17 @@ namespace OpenERP_RV_Server.Backend
 
             foreach (var f in files)
             {
-                response.Add(new ExpenseService().AddExpenseFromCFDI(f, true));
+                try
+                {
+                    response.Add(new ExpenseService().AddExpenseFromCFDI(f, true));
+                }
+                catch (Exception ex)
+                {
+                    response.Add(new ExpenseModel { Info = ex.Message });
+                    continue;
+                }
             }
+
 
             return response;
         }
@@ -30,8 +40,25 @@ namespace OpenERP_RV_Server.Backend
         {
             var xmlString = UtilService.ReadFormFileAsync(xml);
             var cfdi = UtilService.Deserialize<Comprobante>(xmlString);
-
             var companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
+
+
+            if (cfdi.TipoDeComprobante != c_TipoDeComprobante.I)
+                throw new Exception("Error en el archivo " + xml.FileName + " : El tipo de comprobante no es válido, debe ser de tipo Ingreso");
+
+            var myRFC = DbContext.Companies.Where(w => w.Id == companyID).FirstOrDefault().FiscalIdentifier;
+            if (myRFC != cfdi.Receptor.Rfc)
+                throw new Exception("Error en el archivo " + xml.FileName + " : El RFC " + cfdi.Receptor.Rfc + " no coincide con el de usuario");
+
+
+            var tfd = cfdi.Complemento.SelectMany(sm => sm.Any).Where(w => w.Name.Contains("tfd:TimbreFiscalDigital")).Select(s => s.Attributes);
+            var uuid = tfd.ToList().FirstOrDefault().GetNamedItem("UUID").Value;
+
+            if (GetCompanyExpenses().Any(f => f.Uuid == Guid.Parse(uuid)))
+                throw new Exception("Error en el archivo " + xml.FileName + " : No se pudo guardar la factura con Folio fiscal " + uuid + " , ya ha sido ingresada anteriormente");
+
+
+
             //var companyID = Guid.Parse(BaseService.companyID);
 
             var provider = DbContext.Suppliers.Where(w => w.Rfc == cfdi.Emisor.Rfc && w.CompanyId == companyID).FirstOrDefault();
@@ -53,12 +80,6 @@ namespace OpenERP_RV_Server.Backend
 
                 provider = DbContext.Suppliers.Where(w => w.Rfc == cfdi.Emisor.Rfc).FirstOrDefault();
             }
-
-            var tfd = cfdi.Complemento.SelectMany(sm => sm.Any).Where(w => w.Name.Contains("tfd:TimbreFiscalDigital")).Select(s => s.Attributes);
-            var uuid = tfd.ToList().FirstOrDefault().GetNamedItem("UUID").Value;
-
-            if (GetCompanyExpenses().Any(f => f.Uuid == Guid.Parse(uuid)))
-                throw new Exception("No se pudo guardar la factura con Folio fiscal " + uuid + " , ya ha sido ingresada anteriormente");
 
 
             var expense = new Expense();
@@ -83,9 +104,7 @@ namespace OpenERP_RV_Server.Backend
             DbContext.SaveChanges();
 
             foreach (var c in cfdi.Conceptos)
-            //for (int i = 0; i < 10; i++)
             {
-                //var c = cfdi.Conceptos[0];
                 var expenseItem = new ExpenseItem()
                 {
                     Description = c.Descripcion,
@@ -93,7 +112,7 @@ namespace OpenERP_RV_Server.Backend
                     ExpenseId = expense.Id,
                     Importe = c.Importe,
                     Quantity = c.Cantidad,
-                    TotalTaxes = c.Impuestos.Traslados.Sum(s => s.Importe),
+                    TotalTaxes = c.Impuestos != null ? c.Impuestos.Traslados.Sum(s => s.Importe) : 0m,
                     Unidad = c.Unidad,
                     UnitPrice = c.ValorUnitario,
                     Discount = c.Descuento,
@@ -103,47 +122,19 @@ namespace OpenERP_RV_Server.Backend
                 DbContext.SaveChanges();
             }
 
-
-            var response = new ExpenseModel()
-            {
-                CurrencyCode = expense.Currency,
-                Total = expense.Total,
-                Subtotal = expense.Subtotal.HasValue ? expense.Subtotal.Value : 0m,
-                Taxes = expense.Tax.HasValue ? expense.Tax.Value : 0m,
-                SupplierName = expense.Supplier.CompanyName,
-                SupplierTaxID = expense.SupplierRfc,
-                ReceiverTaxID = expense.ReceiverRfc,
-                ExchangeRate = expense.ExchangeRate,
-                CompanyID = expense.CompanyId,
-                ExpenseDate = expense.ExpenseDate,
-                Id = expense.Id,
-                ExpenseItems = expense.ExpenseItems.Select(
-                    s => new ExpenseItemModel
-                    {
-                        Id = s.Id,
-                        Total = s.Importe,
-                        Description = s.Description,
-                        Quantity = s.Quantity,
-                        Subtotal = s.UnitPrice * s.Quantity,
-                        Taxes = s.TotalTaxes.HasValue ? s.TotalTaxes.Value : 0m,
-                        UnitPrice = s.UnitPrice,
-                        ExpenseID = s.ExpenseId
-                    }).ToList(),
-
-            };
+            var response = MapExpenseResponseFromEntity(expense);
 
             return response;
         }
 
-        //internal object AddExpenseFromCFDIBatch(IFormFile files)
-        //{
-        //    using (var stream = files.OpenReadStream())
-        //    using (var archive = new ZipArchive(stream))
-        //    {
-        //        var innerFile = archive.GetEntry("foo.txt");
-        //        // do something with the inner file
-        //    }
-        //}
+        public  ExpenseModel GetExpenseById(Guid id)
+        {
+            var companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
+            var expense = GetCompanyExpenses().Include(i=> i.Supplier).Include(i2=> i2.ExpenseItems).FirstOrDefault(f => f.CompanyId == companyID && f.Id == id);
+            return MapExpenseResponseFromEntity(expense, includeXML: true);
+
+        }
+
 
         public PagedListModel<ExpenseModel> GetAllExpenses(int currentPage = 0, int itemsPerPage = 10, string searchTerm = "",
             DateTime? emissionStartDate = null, DateTime? emissionEndDate = null,
@@ -186,6 +177,9 @@ namespace OpenERP_RV_Server.Backend
 
         }
 
+
+        #region helpers
+
         private IQueryable<Expense> GetCompanyExpenses(Guid? companyID = null)
         {
             if (companyID == null)
@@ -196,5 +190,40 @@ namespace OpenERP_RV_Server.Backend
             var expenses = DbContext.Expenses.Where(w => w.CompanyId == companyID.Value);
             return expenses;
         }
+        private static ExpenseModel MapExpenseResponseFromEntity(Expense expense, bool includeXML = false)
+        {
+            return new ExpenseModel()
+            {
+                CurrencyCode = expense.Currency,
+                Total = expense.Total,
+                Subtotal = expense.Subtotal.HasValue ? expense.Subtotal.Value : 0m,
+                Taxes = expense.Tax.HasValue ? expense.Tax.Value : 0m,
+                SupplierName = expense.Supplier.CompanyName,
+                SupplierTaxID = expense.SupplierRfc,
+                ReceiverTaxID = expense.ReceiverRfc,
+                ExchangeRate = expense.ExchangeRate,
+                CompanyID = expense.CompanyId,
+                ExpenseDate = expense.ExpenseDate,
+                Id = expense.Id,
+                HasXML = !string.IsNullOrWhiteSpace(expense.Xml),
+                XML = !string.IsNullOrWhiteSpace(expense.Xml) && includeXML ? expense.Xml: null,
+                ExpenseItems = expense.ExpenseItems.Select(
+                    s => new ExpenseItemModel
+                    {
+                        Id = s.Id,
+                        Total = s.Importe,
+                        Description = s.Description,
+                        Quantity = s.Quantity,
+                        Subtotal = s.UnitPrice * s.Quantity,
+                        Taxes = s.TotalTaxes.HasValue ? s.TotalTaxes.Value : 0m,
+                        UnitPrice = s.UnitPrice,
+                        ExpenseID = s.ExpenseId
+                    }).ToList(),
+
+
+            };
+        }
+
+        #endregion
     }
 }
