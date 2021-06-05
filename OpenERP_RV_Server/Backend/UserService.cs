@@ -64,7 +64,7 @@ namespace OpenERP_RV_Server.Backend
 
             if (decryptedPassword == login.Password)
             {
-                var token = new SecurityService().GenerateJSONWebToken(selectedUser, ref tokenLimitDate);
+                var token = new SecurityService().GenerateJSONWebToken(selectedUser, ref tokenLimitDate, login.SpecialRequestToken);
                 response.Token = token;
                 response.TokenExpiration = tokenLimitDate;
                 response.CompanyID = selectedUser.CompanyId.ToString();
@@ -115,8 +115,8 @@ namespace OpenERP_RV_Server.Backend
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            if (!string.IsNullOrEmpty(accessor.HttpContext.Session.GetString("corporateOfficeID")))
-                return;
+            //if (!string.IsNullOrEmpty(accessor.HttpContext.Session.GetString("corporateOfficeID")))
+            //    return;
 
             string tokenBearer = context.HttpContext.Request.Headers["Authorization"];
             var token = tokenBearer.Split(new string[] { "Bearer " }, StringSplitOptions.None)[1];
@@ -128,7 +128,7 @@ namespace OpenERP_RV_Server.Backend
 
             var companyID = tokenS.Claims.First(claim => claim.Type == "companyId").Value;
             var userName = tokenS.Claims.First(claim => claim.Type == "name").Value;
-            var securityAuthorization = tokenS.Claims.FirstOrDefault(claim => claim.Type == "specialAuthorization").Value;
+            var securityAuthorization = tokenS.Claims.FirstOrDefault(claim => claim.Type == "specialAuthorization")?.Value;
 
 
             var user = new GenericPrincipal(new ClaimsIdentity(userName), null);

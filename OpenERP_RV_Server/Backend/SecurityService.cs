@@ -65,7 +65,7 @@ namespace OpenERP_RV_Server.Backend
             return cipherText;
         }
 
-        public string GenerateJSONWebToken(User userInfo, ref DateTime expiration)
+        public string GenerateJSONWebToken(User userInfo, ref DateTime expiration, bool generateSpecialToken = false)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(UtilService.GetAppSettingsConfiguration("security", "JWT_PrivateKey")));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -77,6 +77,8 @@ namespace OpenERP_RV_Server.Backend
             permClaims.Add(new Claim("name", userInfo.UserName));
             permClaims.Add(new Claim("companyId", userInfo.CompanyId.ToString()));
             permClaims.Add(new Claim("email", userInfo.Email));
+            if (userInfo.IsAdmin && generateSpecialToken)
+                permClaims.Add(new Claim("specialAuthorization", "true"));
 
 
             var token = new JwtSecurityToken(UtilService.GetAppSettingsConfiguration("security", "issuer"),
@@ -86,7 +88,7 @@ namespace OpenERP_RV_Server.Backend
               signingCredentials: credentials);
 
             //TODO: get time from token object
-            expiration = DateTime.Now.AddMinutes(60);
+            expiration = !generateSpecialToken ? DateTime.Now.AddMinutes(60) : DateTime.Now.AddSeconds(30);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

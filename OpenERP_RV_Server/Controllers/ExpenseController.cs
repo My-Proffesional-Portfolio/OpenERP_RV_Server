@@ -69,6 +69,13 @@ namespace OpenERP_RV_Server.Controllers
             return Ok(new ExpenseService().DeleteExpenseByID(id));
         }
 
+        [HttpDelete]
+        [SessionTokenManager]
+        [Route("deleteAll")]
+        public IActionResult Delete()
+        {
+            return Ok(new ExpenseService().DeleteAllExpenses());
+        }
 
 
     }

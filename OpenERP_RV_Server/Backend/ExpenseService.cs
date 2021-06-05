@@ -128,6 +128,36 @@ namespace OpenERP_RV_Server.Backend
             return response;
         }
 
+        public BaseResponse DeleteAllExpenses()
+        {
+            var isAuthorizedForOperation = accessor.HttpContext.Session.GetString("hasAuthorizationToDeleteAll") == "true";
+
+            if (!isAuthorizedForOperation)
+                throw new Exception("Token no válido para ésta operación, favor de generar un token especial con usuario administrador");
+
+            var companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
+
+            var localDbContext = new OpenERP_RVContext();
+            var allExpenses =  localDbContext.Expenses.Include(i=> i.ExpenseItems).Where(w => w.CompanyId == companyID);
+
+
+            foreach (var expense in allExpenses)
+            {
+                //localDbContext.ExpenseItems.RemoveRange(expense.ExpenseItems.ToList());
+                var expenseItems = expense.ExpenseItems.ToList();
+                foreach (var ei in expenseItems)
+                {
+                    localDbContext.Remove(ei);
+                }
+                localDbContext.Expenses.Remove(expense);
+               
+            }
+            localDbContext.SaveChanges();
+
+            return new BaseResponse();
+
+        }
+
         public BaseResponse DeleteExpenseByID(Guid id)
         {
             var deleteResponse = new BaseResponse();
