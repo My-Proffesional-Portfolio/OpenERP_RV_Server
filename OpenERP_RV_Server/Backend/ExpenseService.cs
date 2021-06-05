@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OpenERP_RV_Server.DataAccess;
+using OpenERP_RV_Server.Models;
 using OpenERP_RV_Server.Models.Expense;
 using OpenERP_RV_Server.Models.PagedModels;
 using System;
@@ -42,6 +43,8 @@ namespace OpenERP_RV_Server.Backend
             var cfdi = UtilService.Deserialize<Comprobante>(xmlString);
             var companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
 
+            if (cfdi.Version != "3.3")
+                throw new Exception("Error en el archivo " + xml.FileName + " : El archivo cargado es un archivo CFDI 3.2 el cuál ya no es válido");
 
             if (cfdi.TipoDeComprobante != c_TipoDeComprobante.I)
                 throw new Exception("Error en el archivo " + xml.FileName + " : El tipo de comprobante no es válido, debe ser de tipo Ingreso");
@@ -50,6 +53,7 @@ namespace OpenERP_RV_Server.Backend
             if (myRFC != cfdi.Receptor.Rfc)
                 throw new Exception("Error en el archivo " + xml.FileName + " : El RFC " + cfdi.Receptor.Rfc + " no coincide con el de usuario");
 
+          
 
             var tfd = cfdi.Complemento.SelectMany(sm => sm.Any).Where(w => w.Name.Contains("tfd:TimbreFiscalDigital")).Select(s => s.Attributes);
             var uuid = tfd.ToList().FirstOrDefault().GetNamedItem("UUID").Value;
@@ -57,9 +61,6 @@ namespace OpenERP_RV_Server.Backend
             if (GetCompanyExpenses().Any(f => f.Uuid == Guid.Parse(uuid)))
                 throw new Exception("Error en el archivo " + xml.FileName + " : No se pudo guardar la factura con Folio fiscal " + uuid + " , ya ha sido ingresada anteriormente");
 
-
-
-            //var companyID = Guid.Parse(BaseService.companyID);
 
             var provider = DbContext.Suppliers.Where(w => w.Rfc == cfdi.Emisor.Rfc && w.CompanyId == companyID).FirstOrDefault();
 
@@ -127,20 +128,51 @@ namespace OpenERP_RV_Server.Backend
             return response;
         }
 
-        public  ExpenseModel GetExpenseById(Guid id)
+        public BaseResponse DeleteExpenseByID(Guid id)
         {
-            var companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
-            var expense = GetCompanyExpenses().Include(i=> i.Supplier).Include(i2=> i2.ExpenseItems).FirstOrDefault(f => f.CompanyId == companyID && f.Id == id);
+            var deleteResponse = new BaseResponse();
+            try
+            {
+                var expense = GetExpenseByID(id);
+                if (expense == null)
+                    throw new Exception("No se encotró el gasto solicitado o pertenece a otra empresa");
+
+                DbContext.ExpenseItems.RemoveRange(expense.ExpenseItems);
+                DbContext.SaveChanges();
+
+                DbContext.Expenses.Remove(expense);
+                DbContext.SaveChanges();
+
+                deleteResponse.ErrorMessages = new List<string>();
+                deleteResponse.AdditionalInformation = "Gasto removido con éxito";
+            }
+            catch (Exception ex)
+            {
+                deleteResponse.ErrorMessages.Add(ex.Message + " : " + ex.InnerException != null ? ex.InnerException.Message : "");
+            }
+
+            return deleteResponse;
+        }
+
+        public ExpenseModel GetExpenseById(Guid id)
+        {
+            
+            Expense expense = GetExpenseByID(id);
             return MapExpenseResponseFromEntity(expense, includeXML: true);
 
         }
 
+        private Expense GetExpenseByID(Guid id)
+        {
+            var companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
+            return GetCompanyExpenses().Include(i => i.Supplier).Include(i2 => i2.ExpenseItems).FirstOrDefault(f => f.CompanyId == companyID && f.Id == id);
+        }
 
         public PagedListModel<ExpenseModel> GetAllExpenses(int currentPage = 0, int itemsPerPage = 10, string searchTerm = "",
             DateTime? emissionStartDate = null, DateTime? emissionEndDate = null,
              DateTime? creationStartDate = null, DateTime? creationEndDate = null)
         {
-            var queryableData = GetCompanyExpenses().OrderBy(o => o.CreationDate);
+            var queryableData = GetCompanyExpenses().OrderByDescending(o => o.ExpenseDate);
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
                 queryableData = (IOrderedQueryable<Expense>)queryableData
@@ -206,7 +238,8 @@ namespace OpenERP_RV_Server.Backend
                 ExpenseDate = expense.ExpenseDate,
                 Id = expense.Id,
                 HasXML = !string.IsNullOrWhiteSpace(expense.Xml),
-                XML = !string.IsNullOrWhiteSpace(expense.Xml) && includeXML ? expense.Xml: null,
+                XML = !string.IsNullOrWhiteSpace(expense.Xml) && includeXML ? expense.Xml : null,
+                Uuid = expense.Uuid.ToString(),
                 ExpenseItems = expense.ExpenseItems.Select(
                     s => new ExpenseItemModel
                     {

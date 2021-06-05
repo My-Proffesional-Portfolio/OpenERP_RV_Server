@@ -128,7 +128,8 @@ namespace OpenERP_RV_Server.Backend
 
             var companyID = tokenS.Claims.First(claim => claim.Type == "companyId").Value;
             var userName = tokenS.Claims.First(claim => claim.Type == "name").Value;
-            
+            var securityAuthorization = tokenS.Claims.FirstOrDefault(claim => claim.Type == "specialAuthorization").Value;
+
 
             var user = new GenericPrincipal(new ClaimsIdentity(userName), null);
             accessor.HttpContext.User = user;
@@ -138,6 +139,8 @@ namespace OpenERP_RV_Server.Backend
             accessor.HttpContext.Session.SetString("corporateOfficeID", corporateOfficeID.ToString());
             accessor.HttpContext.Session.SetString("userName", userName);
             accessor.HttpContext.Session.SetString("token", token);
+            if (!string.IsNullOrWhiteSpace(securityAuthorization))
+                accessor.HttpContext.Session.SetString("hasAuthorizationToDeleteAll", securityAuthorization);
 
             BaseService.corporateOfficeID = corporateOfficeID.ToString();
             BaseService.companyID = companyID.ToString();
