@@ -48,7 +48,7 @@ namespace OpenERP_RV_Server.Controllers
              DateTime? creationStartDate = null, DateTime? creationEndDate = null)
         {
 
-            return Ok(new ExpenseService().GetAllExpenses(currentPage, pageSize, searchTerm));
+            return Ok(new ExpenseService().GetAllExpenses(currentPage, pageSize, searchTerm, emissionStartDate, emissionEndDate));
 
         }
 

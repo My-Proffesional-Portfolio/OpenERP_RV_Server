@@ -210,6 +210,15 @@ namespace OpenERP_RV_Server.Backend
                      || w.SupplierRfc.Contains(searchTerm)
                      || w.Supplier.Email.Contains(searchTerm));
 
+            if (emissionStartDate.HasValue)
+                queryableData = (IOrderedQueryable<Expense>)queryableData.Where(w => w.ExpenseDate > emissionStartDate.Value);
+
+            if (emissionEndDate.HasValue)
+            {
+                emissionEndDate = emissionEndDate.Value.AddDays(1);
+                queryableData = (IOrderedQueryable<Expense>)queryableData.Where(w => w.ExpenseDate <= emissionEndDate.Value);
+            }
+
             var pagedExpenses = queryableData.GetPagedData(currentPage, itemsPerPage);
 
 
