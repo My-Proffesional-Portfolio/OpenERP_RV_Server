@@ -79,7 +79,7 @@ namespace OpenERP_RV_Server.Backend
                 DbContext.Suppliers.Add(newProvider);
                 DbContext.SaveChanges();
 
-                provider = DbContext.Suppliers.Where(w => w.Rfc == cfdi.Emisor.Rfc).FirstOrDefault();
+                provider = DbContext.Suppliers.Where(w => w.Rfc == cfdi.Emisor.Rfc && w.CompanyId == companyID).FirstOrDefault();
             }
 
 
@@ -202,22 +202,7 @@ namespace OpenERP_RV_Server.Backend
             DateTime? emissionStartDate = null, DateTime? emissionEndDate = null,
              DateTime? creationStartDate = null, DateTime? creationEndDate = null)
         {
-            var queryableData = GetCompanyExpenses().OrderByDescending(o => o.ExpenseDate);
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-                queryableData = (IOrderedQueryable<Expense>)queryableData
-                    .Where(w => w.Supplier.CompanyName.Contains(searchTerm)
-                     || w.SupplierRfc.Contains(searchTerm)
-                     || w.Supplier.Email.Contains(searchTerm));
-
-            if (emissionStartDate.HasValue)
-                queryableData = (IOrderedQueryable<Expense>)queryableData.Where(w => w.ExpenseDate > emissionStartDate.Value);
-
-            if (emissionEndDate.HasValue)
-            {
-                emissionEndDate = emissionEndDate.Value.AddDays(1);
-                queryableData = (IOrderedQueryable<Expense>)queryableData.Where(w => w.ExpenseDate <= emissionEndDate.Value);
-            }
+            IOrderedQueryable<Expense> queryableData = GetFilteredExpenseData(searchTerm, emissionStartDate, emissionEndDate);
 
             var pagedExpenses = queryableData.GetPagedData(currentPage, itemsPerPage);
 
@@ -248,10 +233,32 @@ namespace OpenERP_RV_Server.Backend
 
         }
 
+        public IOrderedQueryable<Expense> GetFilteredExpenseData(string searchTerm, DateTime? emissionStartDate, DateTime? emissionEndDate)
+        {
+            var queryableData = GetCompanyExpenses().OrderByDescending(o => o.ExpenseDate);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+                queryableData = (IOrderedQueryable<Expense>)queryableData
+                    .Where(w => w.Supplier.CompanyName.Contains(searchTerm)
+                     || w.SupplierRfc.Contains(searchTerm)
+                     || w.Supplier.Email.Contains(searchTerm));
+
+            if (emissionStartDate.HasValue)
+                queryableData = (IOrderedQueryable<Expense>)queryableData.Where(w => w.ExpenseDate > emissionStartDate.Value);
+
+            if (emissionEndDate.HasValue)
+            {
+                emissionEndDate = emissionEndDate.Value.AddDays(1);
+                queryableData = (IOrderedQueryable<Expense>)queryableData.Where(w => w.ExpenseDate <= emissionEndDate.Value);
+            }
+
+            return queryableData;
+        }
+
 
         #region helpers
 
-        private IQueryable<Expense> GetCompanyExpenses(Guid? companyID = null)
+        public IQueryable<Expense> GetCompanyExpenses(Guid? companyID = null)
         {
             if (companyID == null)
             {

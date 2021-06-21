@@ -61,6 +61,17 @@ namespace OpenERP_RV_Server.Controllers
         }
 
 
+        [HttpGet]
+        [SessionTokenManager]
+        [Route("report")]
+        public IActionResult report(string searchTerm = "", DateTime? emissionStartDate = null, DateTime? emissionEndDate = null)
+        {
+
+            return Ok(new ReportService().GetExpenseBySuppliersAmount(searchTerm, emissionStartDate, emissionEndDate));
+
+        }
+
+
 
         [HttpDelete]
         [SessionTokenManager]
