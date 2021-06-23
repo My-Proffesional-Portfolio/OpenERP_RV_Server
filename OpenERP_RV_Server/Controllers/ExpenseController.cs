@@ -62,6 +62,18 @@ namespace OpenERP_RV_Server.Controllers
 
         }
 
+
+        [HttpGet]
+        [SessionTokenManager]
+        [Route("GetAllExpenseItems")]
+        public IActionResult GetAllExpenseItems()
+        {
+
+            return Ok(new ExpenseService().GetAllExpenseItems());
+
+        }
+        
+
         [HttpGet]
         [SessionTokenManager]
         [Route("detail")]

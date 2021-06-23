@@ -53,7 +53,7 @@ namespace OpenERP_RV_Server.Backend
             if (myRFC != cfdi.Receptor.Rfc)
                 throw new Exception("Error en el archivo " + xml.FileName + " : El RFC " + cfdi.Receptor.Rfc + " no coincide con el de usuario");
 
-          
+
 
             var tfd = cfdi.Complemento.SelectMany(sm => sm.Any).Where(w => w.Name.Contains("tfd:TimbreFiscalDigital")).Select(s => s.Attributes);
             var uuid = tfd.ToList().FirstOrDefault().GetNamedItem("UUID").Value;
@@ -135,10 +135,10 @@ namespace OpenERP_RV_Server.Backend
 
             if (newExpense.SelectedProvider == null)
             {
-                 provider = DbContext.Suppliers.Where(w => w.Rfc == newExpense.NewProvider.Rfc && w.CompanyId == Guid.Parse(accessor.HttpContext.Session.GetString("companyID"))).FirstOrDefault();
+                provider = DbContext.Suppliers.Where(w => w.Rfc == newExpense.NewProvider.Rfc && w.CompanyId == Guid.Parse(accessor.HttpContext.Session.GetString("companyID"))).FirstOrDefault();
                 if (provider == null)
                 {
-                   
+
                     newProvider.Id = Guid.NewGuid();
                     newProvider.CompanyId = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
                     newProvider.AddressLocation = newExpense.NewProvider.Address;
@@ -165,8 +165,8 @@ namespace OpenERP_RV_Server.Backend
             newExpenseInDB.Cfdiversion = "";
             newExpenseInDB.Cfdiuse = "";
             newExpenseInDB.Xml = "";
-            newExpenseInDB.SupplierId = newExpense.SelectedProvider != null? newExpense.SelectedProvider.Id : provider.Id;
-            newExpenseInDB.SupplierRfc = newExpense.SelectedProvider != null ?  newExpense.SelectedProvider.Rfc : provider.Rfc;
+            newExpenseInDB.SupplierId = newExpense.SelectedProvider != null ? newExpense.SelectedProvider.Id : provider.Id;
+            newExpenseInDB.SupplierRfc = newExpense.SelectedProvider != null ? newExpense.SelectedProvider.Rfc : provider.Rfc;
             newExpenseInDB.Uuid = null;
             newExpenseInDB.Number = "NA/" + newExpense.ExpenseDate.Year + "-" + newExpense.ExpenseDate.Month + "-" + newExpense.ExpenseDate.Day;
             newExpenseInDB.Folio = "MANUAL/" + (newExpense.SelectedProvider != null ? newExpense.SelectedProvider.Rfc : provider.Rfc);
@@ -211,7 +211,7 @@ namespace OpenERP_RV_Server.Backend
             var companyID = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
 
             var localDbContext = new OpenERP_RVContext();
-            var allExpenses =  localDbContext.Expenses.Include(i=> i.ExpenseItems).Where(w => w.CompanyId == companyID);
+            var allExpenses = localDbContext.Expenses.Include(i => i.ExpenseItems).Where(w => w.CompanyId == companyID);
 
 
             foreach (var expense in allExpenses)
@@ -223,7 +223,7 @@ namespace OpenERP_RV_Server.Backend
                     localDbContext.Remove(ei);
                 }
                 localDbContext.Expenses.Remove(expense);
-               
+
             }
             localDbContext.SaveChanges();
 
@@ -259,7 +259,7 @@ namespace OpenERP_RV_Server.Backend
 
         public ExpenseModel GetExpenseById(Guid id)
         {
-            
+
             Expense expense = GetExpenseByID(id);
             return MapExpenseResponseFromEntity(expense, includeXML: true);
 
@@ -326,6 +326,27 @@ namespace OpenERP_RV_Server.Backend
             }
 
             return queryableData;
+        }
+
+        public List<ExpenseItemCSV> GetAllExpenseItems()
+        {
+            var expensesItems = DbContext.ExpenseItems.Where(w => w.Expense.CompanyId == Guid.Parse(accessor.HttpContext.Session.GetString("companyID")))
+                .Include(i => i.Expense).ThenInclude(ti => ti.Supplier).OrderBy(o => o.Expense.ExpenseDate).Select(s => new ExpenseItemCSV
+                {
+
+                    Description = s.Description.Replace("," , "-"),
+                    Total = s.Importe + (decimal)(s.TotalTaxes.HasValue ? s.TotalTaxes : 0m),
+                    Subtotal = s.UnitPrice * s.Quantity,
+                    ProviderName = s.Expense.Supplier.CompanyName,
+                    ProviderRFC = s.Expense.SupplierRfc,
+                    ExpenseDate = s.Expense.ExpenseDate,
+                    ExpenseID = s.ExpenseId,
+                    Tax = s.TotalTaxes,
+                    HasCFDI = !string.IsNullOrWhiteSpace(s.Expense.Xml),
+
+                }).ToList();
+
+            return expensesItems;
         }
 
 
