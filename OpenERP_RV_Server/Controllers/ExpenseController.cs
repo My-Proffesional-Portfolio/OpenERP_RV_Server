@@ -40,6 +40,16 @@ namespace OpenERP_RV_Server.Controllers
         }
 
 
+        [HttpPost]
+        [SessionTokenManager]
+        [Route("addExpense")]
+        //[Consumes("multipart/form-data")]
+        public IActionResult Post([FromBody] NewExpenseModel newExpense)
+        {
+            return Ok(new ExpenseService().AddExpense(newExpense));
+        }
+
+
 
         [HttpGet]
         [SessionTokenManager]

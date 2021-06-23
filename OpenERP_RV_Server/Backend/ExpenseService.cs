@@ -128,6 +128,79 @@ namespace OpenERP_RV_Server.Backend
             return response;
         }
 
+        public List<ExpenseModel> AddExpense(NewExpenseModel newExpense)
+        {
+            var newProvider = new Supplier();
+            var provider = new Supplier();
+
+            if (newExpense.SelectedProvider == null)
+            {
+                 provider = DbContext.Suppliers.Where(w => w.Rfc == newExpense.NewProvider.Rfc && w.CompanyId == Guid.Parse(accessor.HttpContext.Session.GetString("companyID"))).FirstOrDefault();
+                if (provider == null)
+                {
+                   
+                    newProvider.Id = Guid.NewGuid();
+                    newProvider.CompanyId = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
+                    newProvider.AddressLocation = newExpense.NewProvider.Address;
+                    newProvider.CompanyName = newExpense.NewProvider.Name;
+                    newProvider.LegalName = newExpense.NewProvider.Name;
+                    newProvider.Email = newExpense.NewProvider.Email;
+                    newProvider.Phone = "NA";
+                    newProvider.ContactName = "NA";
+                    newProvider.Rfc = newExpense.NewProvider.Rfc;
+                    DbContext.Suppliers.Add(newProvider);
+                    DbContext.SaveChanges();
+                    provider = DbContext.Suppliers.Where(w => w.Rfc == newProvider.Rfc && w.CompanyId == newProvider.CompanyId).FirstOrDefault();
+                }
+
+            }
+
+            var response = new List<ExpenseModel>();
+            var newExpenseInDB = new Expense();
+            newExpenseInDB.Id = Guid.NewGuid();
+            newExpenseInDB.CompanyId = Guid.Parse(accessor.HttpContext.Session.GetString("companyID"));
+            newExpenseInDB.Total = newExpense.TotalAmount;
+            newExpenseInDB.Tax = newExpense.TaxAmount;
+            newExpenseInDB.Subtotal = newExpense.SubtotalAmount;
+            newExpenseInDB.Cfdiversion = "";
+            newExpenseInDB.Cfdiuse = "";
+            newExpenseInDB.Xml = "";
+            newExpenseInDB.SupplierId = newExpense.SelectedProvider != null? newExpense.SelectedProvider.Id : provider.Id;
+            newExpenseInDB.SupplierRfc = newExpense.SelectedProvider != null ?  newExpense.SelectedProvider.Rfc : provider.Rfc;
+            newExpenseInDB.Uuid = null;
+            newExpenseInDB.Number = "NA/" + newExpense.ExpenseDate.Year + "-" + newExpense.ExpenseDate.Month + "-" + newExpense.ExpenseDate.Day;
+            newExpenseInDB.Folio = "MANUAL/" + (newExpense.SelectedProvider != null ? newExpense.SelectedProvider.Rfc : provider.Rfc);
+            newExpenseInDB.CreationDate = DateTime.Now;
+            newExpenseInDB.ExchangeRate = 1;
+            newExpenseInDB.Currency = "MXN";
+            newExpenseInDB.ExpenseDate = newExpense.ExpenseDate;
+            DbContext.Expenses.Add(newExpenseInDB);
+
+            foreach (var item in newExpense.Items)
+            {
+                var newExpenseItem = new ExpenseItem();
+                newExpenseItem.Id = Guid.NewGuid();
+                newExpenseItem.ExpenseId = newExpenseInDB.Id;
+                newExpenseItem.Unidad = "PIEZA";
+                newExpenseItem.Importe = item.Total;
+                newExpenseItem.TotalTaxes = item.Tax;
+                newExpenseItem.Description = item.ProductName;
+                newExpenseItem.Discount = 0m;
+                newExpenseItem.UnitPrice = item.Price;
+                newExpenseItem.Quantity = item.Quantity;
+                DbContext.ExpenseItems.Add(newExpenseItem);
+            }
+
+            DbContext.SaveChanges();
+
+
+            var entityExpense = GetExpenseByID(newExpenseInDB.Id);
+            var expenseResponse = MapExpenseResponseFromEntity(entityExpense);
+            response.Add(expenseResponse);
+            return response;
+
+        }
+
         public BaseResponse DeleteAllExpenses()
         {
             var isAuthorizedForOperation = accessor.HttpContext.Session.GetString("hasAuthorizationToDeleteAll") == "true";
