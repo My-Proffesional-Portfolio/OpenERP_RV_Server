@@ -111,5 +111,14 @@ namespace OpenERP_RV_Server.Controllers
         }
 
 
+        [HttpPut]
+        [SessionTokenManager]
+        [Route("UpdateFullFilledItem")]
+        //[Consumes("multipart/form-data")]
+        public IActionResult Post(bool statusUpdate, Guid Uuid)
+        {
+            return Ok(new ExpenseService().UpdateExpenseItemStatus(statusUpdate, Uuid));
+        }
+
     }
 }

@@ -16,6 +16,6 @@ namespace OpenERP_RV_Server.Models
         public string ProviderName { get; set; }
         public string ProviderRFC { get; set; }
         public bool HasCFDI { get; set; }
-
+        public string FullFilled { get;  set; }
     }
 }

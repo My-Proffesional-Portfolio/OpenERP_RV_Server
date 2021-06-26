@@ -15,8 +15,9 @@ namespace OpenERP_RV_Server.DataAccess
         public decimal Quantity { get; set; }
         public string Unidad { get; set; }
         public decimal? TotalTaxes { get; set; }
+        public decimal? Discount { get; set; }
+        public bool? FullFilled { get; set; }
 
         public virtual Expense Expense { get; set; }
-        public decimal Discount { get;  set; }
     }
 }

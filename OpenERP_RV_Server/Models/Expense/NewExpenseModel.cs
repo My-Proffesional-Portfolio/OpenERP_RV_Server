@@ -32,6 +32,7 @@ namespace OpenERP_RV_Server.Models.Expense
         public decimal Price { get; set; }
         public decimal Tax { get; set; }
         public decimal Total { get; set; }
+        public bool FullFilled { get; set; }
 
     }
 

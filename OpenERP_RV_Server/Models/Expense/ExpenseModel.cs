@@ -40,5 +40,6 @@ namespace OpenERP_RV_Server.Models.Expense
         public decimal Subtotal { get; set; }
         public decimal Taxes { get; set; }
         public decimal Total { get; set; }
+        public bool FullFilled { get; set; }
     }
 }

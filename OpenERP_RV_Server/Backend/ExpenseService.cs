@@ -100,6 +100,7 @@ namespace OpenERP_RV_Server.Backend
             expense.Currency = cfdi.Moneda;
             expense.CreationDate = DateTime.Now;
             expense.ExpenseDate = cfdi.Fecha;
+            expense.PaymentMethod = cfdi.MetodoPago == (c_MetodoPago)0 ? "PUE" : "PPD";
 
             DbContext.Expenses.Add(expense);
             DbContext.SaveChanges();
@@ -117,6 +118,7 @@ namespace OpenERP_RV_Server.Backend
                     Unidad = c.Unidad,
                     UnitPrice = c.ValorUnitario,
                     Discount = c.Descuento,
+                    FullFilled = true
                 };
 
                 DbContext.ExpenseItems.Add(expenseItem);
@@ -126,6 +128,21 @@ namespace OpenERP_RV_Server.Backend
             var response = MapExpenseResponseFromEntity(expense);
 
             return response;
+        }
+
+        public bool UpdateExpenseItemStatus(bool statusUpdate, Guid uuid)
+        {
+            var succeed = false;
+            var item = DbContext.ExpenseItems.Where(w => w.Expense.CompanyId == Guid.Parse(accessor.HttpContext.Session.GetString("companyID"))
+           && w.Id == uuid).FirstOrDefault();
+
+            if (item == null)
+                return succeed;
+
+            item.FullFilled = statusUpdate;
+            DbContext.SaveChanges();
+
+            return succeed = true;
         }
 
         public List<ExpenseModel> AddExpense(NewExpenseModel newExpense)
@@ -182,7 +199,8 @@ namespace OpenERP_RV_Server.Backend
                 newExpenseItem.Id = Guid.NewGuid();
                 newExpenseItem.ExpenseId = newExpenseInDB.Id;
                 newExpenseItem.Unidad = "PIEZA";
-                newExpenseItem.Importe = item.Total;
+                newExpenseItem.Importe = item.Quantity * item.Price;
+                newExpenseItem.FullFilled = item.FullFilled;
                 newExpenseItem.TotalTaxes = item.Tax;
                 newExpenseItem.Description = item.ProductName;
                 newExpenseItem.Discount = 0m;
@@ -334,9 +352,10 @@ namespace OpenERP_RV_Server.Backend
                 .Include(i => i.Expense).ThenInclude(ti => ti.Supplier).OrderBy(o => o.Expense.ExpenseDate).Select(s => new ExpenseItemCSV
                 {
 
-                    Description = s.Description.Replace("," , "-"),
+                    Description = s.Description.Replace(",", "-"),
                     Total = s.Importe + (decimal)(s.TotalTaxes.HasValue ? s.TotalTaxes : 0m),
                     Subtotal = s.UnitPrice * s.Quantity,
+                    FullFilled = s.FullFilled.Value ? "OK" : "PENDIENTE",
                     ProviderName = s.Expense.Supplier.CompanyName,
                     ProviderRFC = s.Expense.SupplierRfc,
                     ExpenseDate = s.Expense.ExpenseDate,
@@ -390,7 +409,8 @@ namespace OpenERP_RV_Server.Backend
                         Subtotal = s.UnitPrice * s.Quantity,
                         Taxes = s.TotalTaxes.HasValue ? s.TotalTaxes.Value : 0m,
                         UnitPrice = s.UnitPrice,
-                        ExpenseID = s.ExpenseId
+                        ExpenseID = s.ExpenseId,
+                        FullFilled = s.FullFilled.Value
                     }).ToList(),
 
 

@@ -64,13 +64,13 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.Clients)
                     .HasForeignKey(d => d.BusinessCategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Clients__Busines__3B75D760");
+                    .HasConstraintName("FK__Clients__Busines__693CA210");
 
                 entity.HasOne(d => d.CorporateOffice)
                     .WithMany(p => p.Clients)
                     .HasForeignKey(d => d.CorporateOfficeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Clients__Corpora__3A81B327");
+                    .HasConstraintName("FK__Clients__Corpora__68487DD7");
             });
 
             modelBuilder.Entity<Company>(entity =>
@@ -97,13 +97,13 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.Companies)
                     .HasForeignKey(d => d.BusinessCategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Companies__Busin__2A4B4B5E");
+                    .HasConstraintName("FK__Companies__Busin__6383C8BA");
 
                 entity.HasOne(d => d.CorporateOffice)
                     .WithMany(p => p.Companies)
                     .HasForeignKey(d => d.CorporateOfficeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Companies__Corpo__276EDEB3");
+                    .HasConstraintName("FK__Companies__Corpo__628FA481");
             });
 
             modelBuilder.Entity<CorporateOffice>(entity =>
@@ -169,28 +169,30 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.Expenses)
                     .HasForeignKey(d => d.CompanyId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Expenses__Compan__7E37BEF6");
+                    .HasConstraintName("FK__Expenses__Compan__1BC821DD");
 
                 entity.HasOne(d => d.Supplier)
                     .WithMany(p => p.Expenses)
                     .HasForeignKey(d => d.SupplierId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Expenses__Suppli__7D439ABD");
+                    .HasConstraintName("FK__Expenses__Suppli__1AD3FDA4");
             });
 
             modelBuilder.Entity<ExpenseItem>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.Property(e => e.Description)
+                entity.Property(e => e.Description).IsRequired();
+
+                entity.Property(e => e.Discount).HasColumnType("money");
+
+                entity.Property(e => e.FullFilled)
                     .IsRequired()
-                    .HasMaxLength(128);
+                    .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.Importe).HasColumnType("money");
 
                 entity.Property(e => e.Quantity).HasColumnType("decimal(18, 0)");
-
-                entity.Property(e => e.Discount).HasColumnType("decimal(18, 0)");
 
                 entity.Property(e => e.TotalTaxes).HasColumnType("money");
 
@@ -202,7 +204,7 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.ExpenseItems)
                     .HasForeignKey(d => d.ExpenseId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__ExpenseIt__Expen__00200768");
+                    .HasConstraintName("FK__ExpenseIt__Expen__1DB06A4F");
             });
 
             modelBuilder.Entity<Product>(entity =>
@@ -229,7 +231,7 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.Products)
                     .HasForeignKey(d => d.CorporateOfficeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Products__Corpor__4E88ABD4");
+                    .HasConstraintName("FK__Products__Corpor__70DDC3D8");
             });
 
             modelBuilder.Entity<SalesConcept>(entity =>
@@ -254,7 +256,7 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.SalesConcepts)
                     .HasForeignKey(d => d.CorporateOfficeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__SalesConc__Corpo__52593CB8");
+                    .HasConstraintName("FK__SalesConc__Corpo__74AE54BC");
             });
 
             modelBuilder.Entity<Supplier>(entity =>
@@ -281,7 +283,7 @@ namespace OpenERP_RV_Server.DataAccess
                     .WithMany(p => p.Suppliers)
                     .HasForeignKey(d => d.CompanyId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Suppliers__Compa__7C4F7684");
+                    .HasConstraintName("FK__Suppliers__Compa__19DFD96B");
             });
 
             modelBuilder.Entity<User>(entity =>
