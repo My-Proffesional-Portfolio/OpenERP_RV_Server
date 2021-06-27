@@ -353,7 +353,7 @@ namespace OpenERP_RV_Server.Backend
                 {
 
                     Description = s.Description.Replace(",", "-"),
-                    Total = s.Importe + (decimal)(s.TotalTaxes.HasValue ? s.TotalTaxes : 0m),
+                    Total = s.Importe + (decimal)(s.TotalTaxes.HasValue ? s.TotalTaxes : 0m) - (decimal) s.Discount,
                     Subtotal = s.UnitPrice * s.Quantity,
                     FullFilled = s.FullFilled.Value ? "OK" : "PENDIENTE",
                     ProviderName = s.Expense.Supplier.CompanyName,
@@ -403,7 +403,7 @@ namespace OpenERP_RV_Server.Backend
                     s => new ExpenseItemModel
                     {
                         Id = s.Id,
-                        Total = s.Importe,
+                        Total = s.Importe + (decimal)(s.TotalTaxes.HasValue ? s.TotalTaxes : 0m) - (decimal)s.Discount,
                         Description = s.Description,
                         Quantity = s.Quantity,
                         Subtotal = s.UnitPrice * s.Quantity,
