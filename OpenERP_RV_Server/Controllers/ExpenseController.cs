@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OpenERP_RV_Server.Backend;
+using OpenERP_RV_Server.Backend.PDF;
 using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.Filters;
 using OpenERP_RV_Server.Models;
@@ -72,7 +73,17 @@ namespace OpenERP_RV_Server.Controllers
             return Ok(new ExpenseService().GetAllExpenseItems());
 
         }
-        
+
+        [HttpGet]
+        [SessionTokenManager]
+        [Route("GetAllExpenseItemsPDF")]
+        public IActionResult GetAllExpenseItemsPDF()
+        {
+
+            return Ok(new PdfService().PrintExpenseItemsPDF());
+
+        }
+
 
         [HttpGet]
         [SessionTokenManager]

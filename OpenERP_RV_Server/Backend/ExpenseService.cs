@@ -348,24 +348,29 @@ namespace OpenERP_RV_Server.Backend
 
         public List<ExpenseItemCSV> GetAllExpenseItems()
         {
-            var expensesItems = DbContext.ExpenseItems.Where(w => w.Expense.CompanyId == Guid.Parse(accessor.HttpContext.Session.GetString("companyID")))
-                .Include(i => i.Expense).ThenInclude(ti => ti.Supplier).OrderBy(o => o.Expense.ExpenseDate).Select(s => new ExpenseItemCSV
-                {
+            var expensesItems = GetExpenseItems().Select(s => new ExpenseItemCSV
+            {
 
-                    Description = s.Description.Replace(",", "-"),
-                    Total = s.Importe + (decimal)(s.TotalTaxes.HasValue ? s.TotalTaxes : 0m) - (decimal) s.Discount,
-                    Subtotal = s.UnitPrice * s.Quantity,
-                    FullFilled = s.FullFilled.Value ? "OK" : "PENDIENTE",
-                    ProviderName = s.Expense.Supplier.CompanyName,
-                    ProviderRFC = s.Expense.SupplierRfc,
-                    ExpenseDate = s.Expense.ExpenseDate,
-                    ExpenseID = s.ExpenseId,
-                    Tax = s.TotalTaxes,
-                    HasCFDI = !string.IsNullOrWhiteSpace(s.Expense.Xml),
+                Description = s.Description.Replace(",", "-"),
+                Total = s.Importe + (decimal)(s.TotalTaxes.HasValue ? s.TotalTaxes : 0m) - (decimal)s.Discount,
+                Subtotal = s.UnitPrice * s.Quantity,
+                FullFilled = s.FullFilled.Value ? "OK" : "PENDIENTE",
+                ProviderName = s.Expense.Supplier.CompanyName,
+                ProviderRFC = s.Expense.SupplierRfc,
+                ExpenseDate = s.Expense.ExpenseDate,
+                ExpenseID = s.ExpenseId,
+                Tax = s.TotalTaxes,
+                HasCFDI = !string.IsNullOrWhiteSpace(s.Expense.Xml),
 
-                }).ToList();
+            }).ToList();
 
             return expensesItems;
+        }
+
+        public IOrderedQueryable<ExpenseItem> GetExpenseItems()
+        {
+            return DbContext.ExpenseItems.Where(w => w.Expense.CompanyId == Guid.Parse(accessor.HttpContext.Session.GetString("companyID")))
+                            .Include(i => i.Expense).ThenInclude(ti => ti.Supplier).OrderBy(o => o.Expense.ExpenseDate);
         }
 
 
