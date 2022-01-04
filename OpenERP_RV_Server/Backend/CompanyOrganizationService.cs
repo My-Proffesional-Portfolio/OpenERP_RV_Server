@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using OpenERP_RV_Server.DataAccess;
 using OpenERP_RV_Server.ExceptionTypes;
 using OpenERP_RV_Server.Models;
@@ -14,10 +15,21 @@ namespace OpenERP_RV_Server.Backend
 {
     public class CompanyOrganizationService : BaseService
     {
-        public NewCompanyOrganizationResult AddNewCompanyOrganization(NewCompanyOrganizationModel company)
+        private IDbContextTransaction _transaction;
+        public CompanyOrganizationService()
+        {
+           _transaction = DbContext.Database.BeginTransaction();
+        }
+
+        public CompanyOrganizationService(IDbContextTransaction transaction, OpenERP_RVContext dbContext)
+        {
+            _transaction = transaction;
+            DbContext = dbContext;
+        }
+        public virtual NewCompanyOrganizationResult AddNewCompanyOrganization(NewCompanyOrganizationModel company)
         {
             //using var context = new OpenERP_RVContext();
-            using var transaction = DbContext.Database.BeginTransaction();
+            
 
             var result = new NewCompanyOrganizationResult();
             try
@@ -56,7 +68,7 @@ namespace OpenERP_RV_Server.Backend
                 // Commit transaction if all commands succeed, transaction will auto-rollback
                 // when disposed if either commands fails
                 DbContext.SaveChanges();
-                transaction.Commit();
+                _transaction.Commit();
                 return result;
             }
             catch (Exception ex)
@@ -115,7 +127,7 @@ namespace OpenERP_RV_Server.Backend
             newUser.UserId = Guid.NewGuid();
             newUser.CompanyId = newCompanyID;
 
-            if (new UserService().GetUsers().FirstOrDefault(f => f.UserName == userName) != null)
+            if (new UserService().GetUserByName(userName) != null)
                 throw new Exception("El usuario ingresado ya existe en nuestra base de datos, intenta otro nombre de usuario");
 
             newUser.UserName = userName;
@@ -158,15 +170,19 @@ namespace OpenERP_RV_Server.Backend
             newCompany.FiscalIdentifier = company.FiscalIdentificationNumber;
             newCompany.Address = address;
             newCompany.Status = true;
-            newCompany.BusinessCategoryId = DbContext.BusinessCategories.FirstOrDefault(f => f.Description == "No especificado").Id;
+            newCompany.BusinessCategoryId = GetDefaultBussinessCategoryID();
             DbContext.Companies.Add(newCompany);
             //DbContext.Companies.Add(newCompany);
             //DbContext.SaveChanges();
             return newCompany;
         }
 
+        public virtual Guid GetDefaultBussinessCategoryID()
+        {
+           return DbContext.BusinessCategories.FirstOrDefault(f => f.Description == "No especificado").Id;
+        }
 
-        private long GetCorporativeOfficeNumber()
+        public virtual long GetCorporativeOfficeNumber()
         {
 
             var lastCorporate = GetCorporates().OrderByDescending(o => o.CorporativeOfficeNumber).FirstOrDefault();

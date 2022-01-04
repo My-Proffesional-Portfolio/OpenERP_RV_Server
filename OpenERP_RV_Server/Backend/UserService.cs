@@ -18,11 +18,24 @@ namespace OpenERP_RV_Server.Backend
 {
     public class UserService : BaseService
     {
+        public UserService()
+        {
+
+        }
+        public UserService(OpenERP_RVContext dbContext)
+        {
+            DbContext = dbContext;
+        }
 
         public IQueryable<User> GetUsers()
         {
             return DbContext.Users.AsQueryable();
         }
+
+        //public virtual User GetUserByName(string UserName)
+        //{
+        //    return GetUsers().FirstOrDefault(f => f.UserName == UserName);
+        //}
 
         public User AddNewUser(string userName, string password, string phone, string email, Guid newCompanyID, Guid? newCorporateOfficeID)
         {
@@ -95,7 +108,7 @@ namespace OpenERP_RV_Server.Backend
 
         }
 
-        private User GetUserByName(string userName)
+        public virtual User GetUserByName(string userName)
         {
             return GetUsers().Where(w => w.UserName == userName).FirstOrDefault(); ;
         }

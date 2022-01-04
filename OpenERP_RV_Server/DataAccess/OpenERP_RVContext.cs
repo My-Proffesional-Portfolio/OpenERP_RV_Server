@@ -32,7 +32,7 @@ namespace OpenERP_RV_Server.DataAccess
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=open-erp.database.windows.net;Database=OpenERP_RV;User Id=open-erp-admin;password=op3n3rp-070421;Trusted_Connection=False;MultipleActiveResultSets=true;");
+                optionsBuilder.UseSqlServer("Server=open-rv-erp.database.windows.net;Database=OpenERP_RV;User Id=open-erp-admin;password=op3n3rp-070421;Trusted_Connection=False;MultipleActiveResultSets=true;");
                 //optionsBuilder.UseSqlServer("Server=DESKTOP-VL2FT7Q\\SQLEXPRESS;Database=OpenERP_RV;Trusted_Connection=True;");
             }
         }
